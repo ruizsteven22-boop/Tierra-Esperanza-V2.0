@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X } from 'lucide-react';
+import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
@@ -16,7 +16,7 @@ export default function Directiva() {
 
   const [isNewAssemblyModalOpen, setIsNewAssemblyModalOpen] = useState(false);
   const [newAssembly, setNewAssembly] = useState({
-    type: 'Ordinaria', date: '', status: 'Programada'
+    type: 'Ordinaria', date: '', status: 'Programada', location: ''
   });
 
   const fetchData = () => {
@@ -48,7 +48,7 @@ export default function Directiva() {
       });
       if (res.ok) {
         setIsNewAssemblyModalOpen(false);
-        setNewAssembly({ type: 'Ordinaria', date: '', status: 'Programada' });
+        setNewAssembly({ type: 'Ordinaria', date: '', status: 'Programada', location: '' });
         fetchData();
       }
     } catch (error) {
@@ -151,11 +151,17 @@ export default function Directiva() {
                     </span>
                   </div>
                   <div className="text-slate-600 mt-2">
-                    <div className="flex items-center gap-4 text-sm mb-3">
+                    <div className="flex flex-wrap items-center gap-4 text-sm mb-3">
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4 text-slate-400" />
                         <span>Asistencia: {assembly.attendance > 0 ? `${assembly.attendance} socios` : 'Por definir'}</span>
                       </div>
+                      {assembly.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4 text-slate-400" />
+                          <span>Lugar: {assembly.location}</span>
+                        </div>
+                      )}
                     </div>
                     {assembly.agreements && (
                       <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
@@ -213,6 +219,16 @@ export default function Directiva() {
                     required
                     value={newAssembly.date}
                     onChange={(e) => setNewAssembly({...newAssembly, date: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Dirección / Sede</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Sede Social, Calle Principal #123"
+                    value={newAssembly.location}
+                    onChange={(e) => setNewAssembly({...newAssembly, location: e.target.value})}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>

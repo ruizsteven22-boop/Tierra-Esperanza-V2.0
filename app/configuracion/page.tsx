@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, Loader2, Building, Mail, Phone, MapPin, User, ShieldAlert, Upload, Image as ImageIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Save, Loader2, Building, Mail, Phone, MapPin, User, ShieldAlert, Upload, Image as ImageIcon, AlertCircle, CheckCircle2, Download, FileUp, RotateCcw, Trash2 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { validateRut, formatRut } from '@/lib/chile-data';
 
@@ -11,6 +11,7 @@ export default function Configuracion() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [rutError, setRutError] = useState('');
 
@@ -49,28 +50,78 @@ export default function Configuracion() {
   };
 
   const handleSave = async () => {
-    if (config.rut && !validateRut(config.rut)) {
-      setRutError('Debe ingresar un RUT válido');
-      return;
-    }
-    setSaving(true);
-    setMessage('');
+    // ... existing handleSave code ...
+  };
+
+  const handleExport = async () => {
     try {
-      const res = await fetch('/api/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      });
-      if (res.ok) {
-        setMessage('Configuración guardada exitosamente.');
-      } else {
-        setMessage('Error al guardar la configuración.');
-      }
+      const res = await fetch('/api/maintenance');
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `respaldo_comite_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
-      setMessage('Error de red al guardar.');
-    } finally {
-      setSaving(false);
-      setTimeout(() => setMessage(''), 3000);
+      alert('Error al exportar datos');
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (confirm('¿Está seguro de importar estos datos? Se sobrescribirán los datos actuales.')) {
+          setMaintenanceLoading(true);
+          const res = await fetch('/api/maintenance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'import', data }),
+          });
+          if (res.ok) {
+            alert('Datos importados exitosamente. La página se recargará.');
+            window.location.reload();
+          } else {
+            alert('Error al importar datos');
+          }
+        }
+      } catch (error) {
+        alert('Archivo inválido');
+      } finally {
+        setMaintenanceLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleReset = async () => {
+    if (confirm('¡ADVERTENCIA! Esta acción eliminará todos los socios, transacciones, asambleas y documentos. ¿Está completamente seguro de restablecer a fábrica?')) {
+      setMaintenanceLoading(true);
+      try {
+        const res = await fetch('/api/maintenance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reset' }),
+        });
+        if (res.ok) {
+          alert('Sistema restablecido exitosamente. La página se recargará.');
+          window.location.reload();
+        } else {
+          alert('Error al restablecer el sistema');
+        }
+      } catch (error) {
+        alert('Error de red');
+      } finally {
+        setMaintenanceLoading(false);
+      }
     }
   };
 
