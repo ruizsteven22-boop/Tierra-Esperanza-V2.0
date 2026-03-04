@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Plus, UserPlus, Filter, FileText, Printer, Download, MessageCircle, Mail, X, Trash2, Users as UsersIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import jsPDF from 'jspdf';
@@ -687,7 +688,7 @@ export default function Socios() {
             <div className="p-8 overflow-y-auto bg-white" id="print-area">
               <div className="text-center mb-8 border-b-2 border-slate-800 pb-4">
                 {config?.logo && (
-                  <img src={config.logo} alt="Logo" className="h-16 mx-auto mb-4 object-contain" />
+                  <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 mx-auto mb-4 object-contain" referrerPolicy="no-referrer" />
                 )}
                 <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-900">{config?.name}</h1>
                 <p className="text-sm text-slate-600 mt-1">RUT: {config?.rut} | {config?.address}</p>
@@ -919,7 +920,7 @@ export default function Socios() {
                   <div id="statement-print-area" className="bg-white p-4">
                     {config?.logo && (
                       <div className="text-center mb-6">
-                        <img src={config.logo} alt="Logo" className="h-16 mx-auto object-contain" />
+                        <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 mx-auto object-contain" referrerPolicy="no-referrer" />
                       </div>
                     )}
                     <div className="flex justify-between items-start mb-8">

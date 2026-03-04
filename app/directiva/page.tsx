@@ -1,8 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin, Edit2, Trash2, MessageCircle, Mail, Share2, MoreVertical, Bell, Printer, Download, UserCheck, AlertCircle } from 'lucide-react';
+import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin, Edit2, Trash2, MessageCircle, Mail, Share2, MoreVertical, Bell, Printer, Download, UserCheck, AlertCircle, QrCode } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
@@ -182,8 +183,17 @@ export default function Directiva() {
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  const handlePrint = () => {
+  const handlePrint = (id: string) => {
+    const element = document.getElementById(id);
+    if (!element) {
+      window.print();
+      return;
+    }
+
+    const originalId = element.id;
+    element.id = 'print-area';
     window.print();
+    element.id = originalId;
   };
 
   if (loading) return <div className="flex items-center justify-center h-full">Cargando...</div>;
@@ -248,11 +258,13 @@ export default function Directiva() {
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button 
-                    onClick={() => setSelectedMemberForCarnet(member)}
+                    onClick={() => {
+                      setSelectedMemberForCarnet(member);
+                    }}
                     className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                     title="Ver Carnet"
                   >
-                    < Printer className="h-4 w-4" />
+                    <Printer className="h-4 w-4" />
                   </button>
                 </div>
               </CardHeader>
@@ -594,7 +606,7 @@ export default function Directiva() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
-                    onClick={handlePrint}
+                    onClick={() => handlePrint('printable-attendance')}
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
                   >
                     <Printer className="h-4 w-4" />
@@ -770,7 +782,7 @@ export default function Directiva() {
                 <h2 className="text-xl font-bold text-slate-900">Nómina de Directiva</h2>
                 <div className="flex items-center gap-2">
                   <button 
-                    onClick={handlePrint}
+                    onClick={() => handlePrint('printable-nomina')}
                     className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                     title="Imprimir"
                   >
@@ -857,7 +869,7 @@ export default function Directiva() {
                 <h2 className="text-xl font-bold text-slate-900">Credencial de Directiva</h2>
                 <div className="flex items-center gap-2">
                   <button 
-                    onClick={handlePrint}
+                    onClick={() => handlePrint('printable-carnet')}
                     className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                     title="Imprimir"
                   >
@@ -871,54 +883,71 @@ export default function Directiva() {
                   </button>
                 </div>
               </div>
-              <div className="p-8 flex justify-center bg-slate-50">
-                <div className="w-[340px] h-[210px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200 relative flex flex-col" id="printable-carnet">
+              <div className="p-8 flex justify-center bg-slate-100">
+                <div className="w-[340px] h-[210px] bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 relative flex flex-col font-sans" id="printable-carnet">
+                  {/* Decorative Background */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-500/5 rounded-full -ml-12 -mb-12"></div>
+                  
                   {/* Header */}
-                  <div className="bg-emerald-600 p-3 flex items-center gap-3">
-                    <div className="bg-white p-1 rounded-lg">
-                      <Building2 className="h-6 w-6 text-emerald-600" />
+                  <div className="bg-emerald-600 p-3 flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-white p-1 rounded-md shadow-sm">
+                        <Building2 className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-[9px] font-black text-white uppercase leading-tight tracking-tight">{config?.name || 'Comité de Vivienda'}</h3>
+                        <p className="text-[7px] text-emerald-100 uppercase tracking-[0.2em] font-bold">Credencial Directiva</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-[10px] font-bold text-white uppercase leading-tight">{config?.name}</h3>
-                      <p className="text-[8px] text-emerald-100 uppercase tracking-widest">Credencial de Directiva</p>
+                    <div className="text-right">
+                      <p className="text-[6px] text-emerald-100 uppercase font-bold">Folio</p>
+                      <p className="text-[8px] text-white font-mono font-bold">#{selectedMemberForCarnet.id.slice(0, 6).toUpperCase()}</p>
                     </div>
                   </div>
 
                   {/* Body */}
-                  <div className="flex-1 p-4 flex gap-4">
-                    <div className="w-24 h-24 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center text-slate-300">
-                      <Users className="h-12 w-12" />
+                  <div className="flex-1 p-4 flex gap-4 relative z-10">
+                    <div className="w-24 h-24 bg-slate-50 rounded-lg border border-slate-200 flex flex-col items-center justify-center relative overflow-hidden group">
+                      <Users className="h-10 w-10 text-slate-200" />
+                      <div className="absolute bottom-0 inset-x-0 bg-slate-900/10 py-1 flex justify-center">
+                        <QrCode className="h-4 w-4 text-slate-400" />
+                      </div>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Nombre Completo</p>
-                        <p className="text-xs font-bold text-slate-900 leading-tight">{selectedMemberForCarnet.name}</p>
+                    <div className="flex-1 flex flex-col justify-between py-1">
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-wider">Nombre del Dirigente</p>
+                          <p className="text-xs font-black text-slate-900 leading-tight uppercase">{selectedMemberForCarnet.name}</p>
+                        </div>
+                        <div className="flex gap-4">
+                          <div>
+                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-wider">RUT</p>
+                            <p className="text-[10px] font-mono font-bold text-slate-700">{selectedMemberForCarnet.rut}</p>
+                          </div>
+                          <div>
+                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-wider">Vigencia</p>
+                            <p className="text-[10px] font-bold text-slate-700">{format(new Date(selectedMemberForCarnet.termEnd), 'MM/yyyy')}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">RUT</p>
-                        <p className="text-xs font-mono text-slate-700">{selectedMemberForCarnet.rut}</p>
-                      </div>
-                      <div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Cargo</p>
-                        <p className="text-xs font-bold text-emerald-600 uppercase">{selectedMemberForCarnet.role}</p>
+                      
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-md px-2 py-1 inline-block self-start">
+                        <p className="text-[7px] font-bold text-emerald-600 uppercase tracking-wider">Cargo</p>
+                        <p className="text-[11px] font-black text-emerald-700 uppercase">{selectedMemberForCarnet.role}</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Footer */}
-                  <div className="bg-slate-900 p-2 px-4 flex justify-between items-center">
-                    <div className="text-[8px] text-slate-400">
-                      Vigencia: {format(new Date(selectedMemberForCarnet.termEnd), 'MM/yyyy')}
+                  {/* Footer Bar */}
+                  <div className="bg-slate-900 p-2 px-4 flex justify-between items-center relative z-10">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                      <span className="text-[7px] font-black text-white uppercase tracking-widest">Miembro Titular Activo</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <ShieldAlert className="h-3 w-3 text-emerald-500" />
-                      <span className="text-[8px] font-bold text-white uppercase">Titular</span>
+                    <div className="text-[6px] text-slate-400 font-bold uppercase">
+                      Sistema de Gestión Tierra Esperanza
                     </div>
-                  </div>
-
-                  {/* Watermark */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
-                    <Building2 className="w-48 h-48" />
                   </div>
                 </div>
               </div>

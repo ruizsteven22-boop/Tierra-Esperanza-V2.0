@@ -143,6 +143,7 @@ class Database {
     { id: uuidv4(), role: 'Presidente', name: 'Ana Silva', rut: '12.345.678-9', substituteName: 'Roberto Díaz', substituteRut: '10.222.333-4', termStart: '2025-01-01', termEnd: '2027-01-01' },
     { id: uuidv4(), role: 'Tesorero', name: 'Luis Martínez', rut: '9.876.543-2', substituteName: 'Elena Martínez', substituteRut: '11.444.555-6', termStart: '2025-01-01', termEnd: '2027-01-01' },
     { id: uuidv4(), role: 'Secretario', name: 'Carmen Rojas', rut: '15.678.901-K', substituteName: 'Miguel Torres', substituteRut: '13.666.777-8', termStart: '2025-01-01', termEnd: '2027-01-01' },
+    { id: uuidv4(), role: 'Secretaría General', name: 'Patricia Lagos', rut: '14.555.666-7', substituteName: 'Viviana Soto', substituteRut: '16.777.888-9', termStart: '2025-01-01', termEnd: '2027-01-01' },
   ];
 }
 

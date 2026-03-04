@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Save, Loader2, Building, Mail, Phone, MapPin, User, ShieldAlert, Upload, Image as ImageIcon, AlertCircle, CheckCircle2, Download, FileUp, RotateCcw, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/components/AuthProvider';
 import { validateRut, formatRut } from '@/lib/chile-data';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -211,7 +212,7 @@ export default function Configuracion() {
             <div className="relative w-32 h-32 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden group">
               {config.logo ? (
                 <>
-                  <img src={config.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                  <Image src={config.logo} alt="Logo" width={128} height={128} className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                     <label className="cursor-pointer p-1.5 bg-white/20 hover:bg-white/40 rounded-full transition-colors" title="Cambiar Logo">
                       <Upload className="h-5 w-5 text-white" />

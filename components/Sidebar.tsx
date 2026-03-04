@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
@@ -67,7 +68,7 @@ export function Sidebar() {
       >
         <div className="flex items-center gap-3 px-4 h-20 border-b border-slate-800 shrink-0 overflow-hidden">
           {config?.logo ? (
-            <img src={config.logo} alt="Logo" className="h-10 w-10 object-contain shrink-0" />
+            <Image src={config.logo} alt="Logo" width={40} height={40} className="h-10 w-10 object-contain shrink-0" referrerPolicy="no-referrer" />
           ) : (
             <div className="h-10 w-10 bg-emerald-500/10 rounded-lg flex items-center justify-center shrink-0">
               <Building2 className="h-6 w-6 text-emerald-400" />

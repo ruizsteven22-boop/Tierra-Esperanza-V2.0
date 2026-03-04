@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, ArrowUpRight, ArrowDownRight, DollarSign, FileText, Printer, Download, MessageCircle, Mail, X, ShieldAlert, BarChart3, PieChart as PieChartIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
@@ -547,7 +548,7 @@ export default function Tesoreria() {
               <div className="flex-1 overflow-y-auto p-8 bg-white" id="report-print-area">
                 <div className="text-center mb-8 border-b-2 border-slate-800 pb-6">
                   {config?.logo && (
-                    <img src={config.logo} alt="Logo" className="h-16 mx-auto mb-4 object-contain" />
+                    <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 mx-auto mb-4 object-contain" referrerPolicy="no-referrer" />
                   )}
                   <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-900">{config?.name}</h1>
                   <p className="text-sm text-slate-600 mt-1">Reporte Consolidado de Ingresos y Egresos</p>

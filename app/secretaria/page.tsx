@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Plus, Download, Send, PenTool, Loader2, Printer, MessageCircle, Mail, X, ShieldAlert } from 'lucide-react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion } from 'motion/react';
@@ -312,7 +313,7 @@ export default function Secretaria() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   {config?.logo && (
-                    <img src={config.logo} alt="Logo" className="h-16 object-contain mb-2" />
+                    <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 object-contain mb-2" referrerPolicy="no-referrer" />
                   )}
                   <p className="font-bold text-sm uppercase">{config?.name}</p>
                 </div>
