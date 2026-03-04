@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   const body = await request.json();
   
   const index = db.members.findIndex(m => m.id === id);

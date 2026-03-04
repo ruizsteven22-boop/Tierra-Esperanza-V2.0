@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await params;
   const body = await request.json();
   const index = db.assemblies.findIndex((a: any) => a.id === id);
 
@@ -19,9 +19,9 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await params;
   const index = db.assemblies.findIndex((a: any) => a.id === id);
 
   if (index === -1) {
