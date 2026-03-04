@@ -309,12 +309,19 @@ export default function Secretaria() {
             
             {/* Preview Area (also used for PDF generation) */}
             <div className="p-12 overflow-y-auto bg-white text-black" id="print-area">
-              <div className="text-right mb-8">
-                <p className="font-bold">{config?.name}</p>
-                <p>Folio: {selectedDoc.folio}</p>
-                <p>Fecha: {format(new Date(selectedDoc.createdAt), "d 'de' MMMM 'de' yyyy", { locale: es })}</p>
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  {config?.logo && (
+                    <img src={config.logo} alt="Logo" className="h-16 object-contain mb-2" />
+                  )}
+                  <p className="font-bold text-sm uppercase">{config?.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold">Folio: {selectedDoc.folio}</p>
+                  <p className="text-sm">Fecha: {format(new Date(selectedDoc.createdAt), "d 'de' MMMM 'de' yyyy", { locale: es })}</p>
+                </div>
               </div>
-              <h2 className="text-xl font-bold text-center mb-8 uppercase">{selectedDoc.type}</h2>
+              <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest border-b-2 border-black pb-2">{selectedDoc.type}</h2>
               <div className="whitespace-pre-wrap text-justify leading-relaxed mb-24">
                 {selectedDoc.content}
               </div>

@@ -14,7 +14,7 @@ import {
   ShieldAlert,
   UserCircle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAuth } from '@/components/AuthProvider';
@@ -32,7 +32,15 @@ const navigation = [
 export function Sidebar() {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [config, setConfig] = useState<any>(null);
   const { role, setRole, canAccess } = useAuth();
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => setConfig(data))
+      .catch(err => console.error('Error fetching config in sidebar:', err));
+  }, []);
 
   const filteredNavigation = navigation.filter(item => canAccess(item.href));
 
@@ -57,8 +65,20 @@ export function Sidebar() {
           )
         )}
       >
-        <div className="flex items-center justify-center h-20 border-b border-slate-800 shrink-0">
-          <h1 className="text-xl font-bold tracking-tight text-emerald-400">Tierra Esperanza</h1>
+        <div className="flex items-center gap-3 px-4 h-20 border-b border-slate-800 shrink-0 overflow-hidden">
+          {config?.logo ? (
+            <img src={config.logo} alt="Logo" className="h-10 w-10 object-contain shrink-0" />
+          ) : (
+            <div className="h-10 w-10 bg-emerald-500/10 rounded-lg flex items-center justify-center shrink-0">
+              <Building2 className="h-6 w-6 text-emerald-400" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-sm font-bold tracking-tight text-white truncate">
+              {config?.name || 'Tierra Esperanza'}
+            </h1>
+            <p className="text-[10px] text-slate-400 truncate uppercase tracking-wider">Comité de Vivienda</p>
+          </div>
         </div>
         <nav className="mt-6 px-4 space-y-2 flex-1 overflow-y-auto">
           {filteredNavigation.map((item) => {

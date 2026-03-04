@@ -43,16 +43,69 @@ export default function Configuracion() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validaciones robustas
+      if (file.size > 2 * 1024 * 1024) {
+        setMessage('Error: El logo no debe superar los 2MB');
+        return;
+      }
+      
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+      if (!allowedTypes.includes(file.type)) {
+        setMessage('Error: Formato de imagen no permitido (usar JPG, PNG, WEBP o SVG)');
+        return;
+      }
+
       const reader = new FileReader();
+      reader.onloadstart = () => setLoading(true);
       reader.onloadend = () => {
         setConfig({ ...config, logo: reader.result as string });
+        setMessage('Logo cargado. Presione "Guardar Cambios" para confirmar.');
+        setLoading(false);
+      };
+      reader.onerror = () => {
+        setMessage('Error al procesar la imagen');
+        setLoading(false);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleRemoveLogo = () => {
+    setConfig({ ...config, logo: '' });
+    setMessage('Logo removido. Presione "Guardar Cambios" para confirmar.');
+  };
+
   const handleSave = async () => {
-    // ... existing handleSave code ...
+    if (rutError) {
+      setMessage('Error: Corrija el RUT antes de guardar');
+      return;
+    }
+
+    setSaving(true);
+    setMessage('');
+    
+    try {
+      const res = await fetch('/api/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setConfig(data);
+        setMessage('✓ Configuración actualizada correctamente');
+        setTimeout(() => setMessage(''), 5000);
+      } else {
+        const errorData = await res.json();
+        setMessage(`Error: ${errorData.message || 'No se pudo guardar la configuración'}`);
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      setMessage('Error de conexión al intentar guardar');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleExport = async () => {
@@ -157,14 +210,29 @@ export default function Configuracion() {
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="relative w-32 h-32 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden group">
               {config.logo ? (
-                <img src={config.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                <>
+                  <img src={config.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <label className="cursor-pointer p-1.5 bg-white/20 hover:bg-white/40 rounded-full transition-colors" title="Cambiar Logo">
+                      <Upload className="h-5 w-5 text-white" />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                    </label>
+                    <button 
+                      onClick={handleRemoveLogo}
+                      className="p-1.5 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors" 
+                      title="Eliminar Logo"
+                    >
+                      <Trash2 className="h-5 w-5 text-white" />
+                    </button>
+                  </div>
+                </>
               ) : (
-                <ImageIcon className="h-12 w-12 text-slate-300" />
+                <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
+                  <ImageIcon className="h-12 w-12 text-slate-300 mb-1" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Subir Logo</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                </label>
               )}
-              <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                <Upload className="h-6 w-6 text-white" />
-                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-              </label>
             </div>
             <div className="flex-1 space-y-2">
               <h3 className="font-bold text-slate-900">Logo del Comité</h3>

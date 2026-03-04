@@ -93,6 +93,7 @@ export interface CommitteeConfig {
   email: string;
   phone: string;
   president: string;
+  logo?: string;
 }
 
 // In-memory database
@@ -104,6 +105,7 @@ class Database {
     email: 'contacto@tierraesperanza.cl',
     phone: '+56912345678',
     president: 'Ana Silva',
+    logo: '',
   };
 
   users: User[] = [
