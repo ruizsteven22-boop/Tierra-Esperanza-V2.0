@@ -517,7 +517,7 @@ export default function Tesoreria() {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" />
                         <YAxis tickFormatter={(value) => `$${value/1000}k`} />
-                        <Tooltip formatter={(value: number) => `$${value.toLocaleString('es-CL')}`} />
+                        <Tooltip formatter={(value: any) => `$${Number(value || 0).toLocaleString('es-CL')}`} />
                         <Legend />
                         <Bar dataKey="ingresos" name="Ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />
                         <Bar dataKey="egresos" name="Egresos" fill="#ef4444" radius={[4, 4, 0, 0]} />

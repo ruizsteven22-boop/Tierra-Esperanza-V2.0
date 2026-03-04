@@ -206,6 +206,12 @@ export default function Socios() {
     shareWhatsApp(text);
   };
 
+  const handleShareEmail = () => {
+    const subject = `Ficha de Socio - ${selectedMember.name}`;
+    const body = `Hola ${selectedMember.name}, te enviamos el resumen de tu ficha de socio en ${config?.name}.\n\nRUT: ${selectedMember.rut}\nEstado: ${selectedMember.status}\n\nPor favor, contáctanos si necesitas actualizar algún dato.`;
+    shareEmail(subject, body);
+  };
+
   const handleDownloadStatementPDF = async () => {
     const element = document.getElementById('statement-print-area');
     if (!element) return;
