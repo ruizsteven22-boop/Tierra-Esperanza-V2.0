@@ -218,6 +218,35 @@ export default function Socios() {
     pdf.save(`Estado_Cuenta_${selectedMember.rut}.pdf`);
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Nombre', 'RUT', 'Email', 'Teléfono', 'Dirección', 'Comuna', 'Región', 'Integrantes Familia', 'Estado'];
+    const csvRows = [
+      headers.join(','),
+      ...filteredMembers.map(member => [
+        `"${member.name}"`,
+        `"${member.rut}"`,
+        `"${member.email}"`,
+        `"${member.phone}"`,
+        `"${member.address}"`,
+        `"${member.commune}"`,
+        `"${member.region}"`,
+        member.familySize,
+        `"${member.status}"`
+      ].join(','))
+    ];
+    
+    const csvContent = "\uFEFF" + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `socios_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const memberBalance = memberTransactions.reduce((acc, t) => acc + (t.type === 'ingreso' ? t.amount : -t.amount), 0);
 
   if (loading) return <div className="flex items-center justify-center h-full">Cargando...</div>;
@@ -229,15 +258,24 @@ export default function Socios() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gestión de Socios</h1>
           <p className="text-slate-500 mt-2">Administra el censo del comité Tierra Esperanza.</p>
         </div>
-        {role !== 'Visualizador' && (
+        <div className="flex flex-wrap items-center gap-2">
           <button 
-            onClick={() => setIsNewMemberModalOpen(true)}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg font-medium transition-colors no-print"
           >
-            <UserPlus className="h-4 w-4" />
-            Nuevo Socio
+            <Download className="h-4 w-4" />
+            Exportar CSV
           </button>
-        )}
+          {role !== 'Visualizador' && (
+            <button 
+              onClick={() => setIsNewMemberModalOpen(true)}
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors no-print"
+            >
+              <UserPlus className="h-4 w-4" />
+              Nuevo Socio
+            </button>
+          )}
+        </div>
       </div>
 
       <Card className="no-print">
