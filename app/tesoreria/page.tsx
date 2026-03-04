@@ -265,8 +265,8 @@ export default function Tesoreria() {
                   tickLine={false} 
                   tick={{ fill: '#64748b', fontSize: 12 }} 
                   tickFormatter={(value?: number) => {
-                    const n = value ?? 0;
-                    return `$${n / 1000}k`;
+                    const n = value ?? 0
+                    return `$${n / 1000}k`
                   }}
                 />
                 <Tooltip 
@@ -529,8 +529,8 @@ export default function Tesoreria() {
                         <XAxis dataKey="name" />
                         <YAxis 
                           tickFormatter={(value?: number) => {
-                            const n = value ?? 0;
-                            return `$${n / 1000}k`;
+                            const n = value ?? 0
+                            return `$${n / 1000}k`
                           }}
                         />
                         <Tooltip formatter={(value: any) => {
