@@ -1,36 +1,71 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
-type Role = 'Administrador' | 'Tesorero' | 'Secretario' | 'Visualizador';
+type Role = 'Administrador' | 'Tesorero' | 'Secretario' | 'Visualizador' | 'Admin' | 'Presidente' | 'Socio';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 interface AuthContextType {
-  role: Role;
-  setRole: (role: Role) => void;
+  user: User | null;
+  role: string;
+  login: (user: User) => void;
+  logout: () => void;
   canAccess: (path: string) => boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRole] = useState<Role>('Administrador');
+  const [user, setUser] = useState<User | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    const savedRole = localStorage.getItem('userRole') as Role;
-    if (savedRole) {
-      setTimeout(() => setRole(savedRole), 0);
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
-    setTimeout(() => setMounted(true), 0);
+    setMounted(true);
+    setLoading(false);
   }, []);
 
-  const handleSetRole = (newRole: Role) => {
-    setRole(newRole);
-    localStorage.setItem('userRole', newRole);
+  useEffect(() => {
+    if (mounted && !loading) {
+      if (!user && pathname !== '/login') {
+        router.push('/login');
+      } else if (user && pathname === '/login') {
+        router.push('/');
+      }
+    }
+  }, [user, pathname, mounted, loading, router]);
+
+  const login = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    router.push('/');
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    router.push('/login');
   };
 
   const canAccess = (path: string) => {
-    if (role === 'Administrador') return true;
+    if (!user) return false;
+    const role = user.role;
+    
+    if (role === 'Admin' || role === 'Administrador' || role === 'Presidente') return true;
     
     // Base paths everyone can access
     if (path === '/' || path === '/socios' || path === '/directiva') return true;
@@ -47,11 +82,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   if (!mounted) {
-    return null; // Prevent hydration mismatch
+    return null;
   }
 
   return (
-    <AuthContext.Provider value={{ role, setRole: handleSetRole, canAccess }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      role: user?.role || '', 
+      login, 
+      logout, 
+      canAccess,
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );

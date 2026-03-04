@@ -1,8 +1,8 @@
 import type {Metadata} from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { Sidebar } from '@/components/Sidebar';
 import { AuthProvider } from '@/components/AuthProvider';
+import { AppLayout } from '@/components/AppLayout';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,14 +22,9 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-slate-50 text-slate-900 font-sans antialiased flex h-screen overflow-hidden" suppressHydrationWarning>
+      <body className="bg-slate-50 text-slate-900 font-sans antialiased" suppressHydrationWarning>
         <AuthProvider>
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-            <div className="max-w-7xl mx-auto w-full">
-              {children}
-            </div>
-          </main>
+          <AppLayout>{children}</AppLayout>
         </AuthProvider>
       </body>
     </html>

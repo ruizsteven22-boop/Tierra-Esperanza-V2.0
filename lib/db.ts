@@ -109,10 +109,10 @@ class Database {
   };
 
   users: User[] = [
-    { id: uuidv4(), name: 'Soporte Técnico', email: 'soporte@tierraesperanza.cl', role: 'Admin', status: 'Activo', createdAt: new Date().toISOString() },
-    { id: uuidv4(), name: 'Ana Silva', email: 'ana.silva@tierraesperanza.cl', role: 'Presidente', status: 'Activo', createdAt: new Date().toISOString() },
-    { id: uuidv4(), name: 'Luis Martínez', email: 'luis.martinez@tierraesperanza.cl', role: 'Tesorero', status: 'Activo', createdAt: new Date().toISOString() },
-    { id: uuidv4(), name: 'Carmen Rojas', email: 'carmen.rojas@tierraesperanza.cl', role: 'Secretario', status: 'Activo', createdAt: new Date().toISOString() },
+    { id: uuidv4(), name: 'Soporte Técnico', email: 'soporte@tierraesperanza.cl', role: 'Admin', status: 'Activo', createdAt: new Date().toISOString(), password: 'admin' },
+    { id: uuidv4(), name: 'Ana Silva', email: 'ana.silva@tierraesperanza.cl', role: 'Presidente', status: 'Activo', createdAt: new Date().toISOString(), password: 'ana' },
+    { id: uuidv4(), name: 'Luis Martínez', email: 'luis.martinez@tierraesperanza.cl', role: 'Tesorero', status: 'Activo', createdAt: new Date().toISOString(), password: 'luis' },
+    { id: uuidv4(), name: 'Carmen Rojas', email: 'carmen.rojas@tierraesperanza.cl', role: 'Secretario', status: 'Activo', createdAt: new Date().toISOString(), password: 'carmen' },
   ];
 
   members: Member[] = [

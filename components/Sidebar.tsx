@@ -33,7 +33,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [config, setConfig] = useState<any>(null);
-  const { role, setRole, canAccess } = useAuth();
+  const { user, logout, canAccess } = useAuth();
 
   useEffect(() => {
     fetch('/api/config')
@@ -105,23 +105,22 @@ export function Sidebar() {
         </nav>
         
         <div className="p-4 border-t border-slate-800 shrink-0">
-          <div className="flex items-center gap-3 mb-3 px-2">
-            <UserCircle className="h-8 w-8 text-slate-400" />
-            <div>
-              <p className="text-sm font-medium text-white">Modo de Vista</p>
-              <p className="text-xs text-slate-400">Simulador de Roles</p>
+          <div className="flex items-center gap-3 mb-4 px-2">
+            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <UserCircle className="h-6 w-6 text-emerald-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-white truncate">{user?.name || 'Usuario'}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold truncate">{user?.role || 'Socio'}</p>
             </div>
           </div>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as any)}
-            className="w-full bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-red-500/10 hover:text-red-400 rounded-xl transition-all border border-slate-700 hover:border-red-500/20"
           >
-            <option value="Administrador">Administrador</option>
-            <option value="Tesorero">Tesorero</option>
-            <option value="Secretario">Secretario</option>
-            <option value="Visualizador">Visualizador</option>
-          </select>
+            <ShieldAlert className="h-4 w-4" />
+            Cerrar Sesión
+          </button>
         </div>
       </div>
 
