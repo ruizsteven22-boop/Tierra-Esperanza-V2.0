@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin, Edit2, Trash2, MessageCircle, Mail, Share2, MoreVertical, Bell, Printer, Download, UserCheck, AlertCircle, QrCode } from 'lucide-react';
+import DirectiveIdCard from '@/components/DirectiveIdCard';
+import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin, Edit2, Trash2, MessageCircle, Mail, Share2, MoreVertical, Bell, Printer, Download, UserCheck, AlertCircle, QrCode, IdCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
@@ -264,7 +265,7 @@ export default function Directiva() {
                     className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                     title="Ver Carnet"
                   >
-                    <Printer className="h-4 w-4" />
+                    <IdCard className="h-4 w-4" />
                   </button>
                 </div>
               </CardHeader>
@@ -479,7 +480,13 @@ export default function Directiva() {
         )}
       </AnimatePresence>
 
-      {/* Edit Assembly Modal */}
+      {selectedMemberForCarnet && (
+        <DirectiveIdCard 
+          member={selectedMemberForCarnet} 
+          onClose={() => setSelectedMemberForCarnet(null)}
+          config={config}
+        />
+      )}
       <AnimatePresence>
         {isEditModalOpen && selectedAssembly && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
