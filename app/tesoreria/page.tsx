@@ -260,7 +260,15 @@ export default function Tesoreria() {
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(value) => `$${value/1000}k`} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#64748b', fontSize: 12 }} 
+                  tickFormatter={(value?: number) => {
+                    const n = value ?? 0;
+                    return `$${n / 1000}k`;
+                  }}
+                />
                 <Tooltip 
                   cursor={{ fill: '#f1f5f9' }}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
@@ -519,7 +527,12 @@ export default function Tesoreria() {
                       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" />
-                        <YAxis tickFormatter={(value) => `$${value/1000}k`} />
+                        <YAxis 
+                          tickFormatter={(value?: number) => {
+                            const n = value ?? 0;
+                            return `$${n / 1000}k`;
+                          }}
+                        />
                         <Tooltip formatter={(value: any) => {
                           const n = typeof value === 'number' ? value : Number(value ?? 0);
                           return [`$${n.toLocaleString('es-CL')}`, ''];
