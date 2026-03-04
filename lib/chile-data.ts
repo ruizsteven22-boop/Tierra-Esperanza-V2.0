@@ -66,23 +66,36 @@ export const REGIONS_CHILE = [
 ];
 
 export function validateRut(rut: string): boolean {
-  if (!/^[0-9]+-[0-9kK]{1}$/.test(rut)) return false;
-  const [num, dv] = rut.split("-");
+  if (!rut || typeof rut !== 'string') return false;
+  const cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (cleanRut.length < 8 || cleanRut.length > 9) return false;
+  const body = cleanRut.slice(0, -1);
+  const dv = cleanRut.slice(-1);
   let sum = 0;
-  let mul = 2;
-  for (let i = num.length - 1; i >= 0; i--) {
-    sum += parseInt(num.charAt(i)) * mul;
-    mul = mul === 7 ? 2 : mul + 1;
+  let multiplier = 2;
+  for (let i = body.length - 1; i >= 0; i--) {
+    sum += parseInt(body[i]) * multiplier;
+    multiplier = multiplier === 7 ? 2 : multiplier + 1;
   }
-  const res = 11 - (sum % 11);
-  let expectedDv = res === 11 ? "0" : res === 10 ? "K" : res.toString();
-  return expectedDv.toUpperCase() === dv.toUpperCase();
+  const expectedDv = 11 - (sum % 11);
+  let calculatedDv = '';
+  if (expectedDv === 11) calculatedDv = '0';
+  else if (expectedDv === 10) calculatedDv = 'K';
+  else calculatedDv = expectedDv.toString();
+  return calculatedDv === dv;
 }
 
 export function formatRut(rut: string): string {
-  let value = rut.replace(/\./g, "").replace(/-/g, "");
-  if (value.length <= 1) return value;
-  const dv = value.slice(-1);
-  const num = value.slice(0, -1);
-  return `${num}-${dv}`;
+  const cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (cleanRut.length < 2) return cleanRut;
+  const body = cleanRut.slice(0, -1);
+  const dv = cleanRut.slice(-1);
+  let formattedBody = '';
+  for (let i = body.length - 1, j = 1; i >= 0; i--, j++) {
+    formattedBody = body[i] + formattedBody;
+    if (j % 3 === 0 && i !== 0) {
+      formattedBody = '.' + formattedBody;
+    }
+  }
+  return `${formattedBody}-${dv}`;
 }

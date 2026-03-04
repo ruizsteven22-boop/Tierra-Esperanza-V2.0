@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, UserPlus, Search, Filter, Trash2, Edit2, ShieldAlert, X } from 'lucide-react';
+import { Shield, UserPlus, Search, Filter, Trash2, Edit2, ShieldAlert, X, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '@/components/AuthProvider';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 export default function Soporte() {
   const { canAccess } = useAuth();
@@ -15,8 +16,15 @@ export default function Soporte() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos');
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [newUser, setNewUser] = useState({
-    name: '', email: '', role: 'Visualizador', status: 'Activo'
+    name: '', email: '', password: '', role: 'Visualizador', status: 'Activo'
+  });
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; userId: string | null }>({
+    isOpen: false,
+    userId: null
   });
 
   const fetchUsers = () => {
@@ -44,20 +52,41 @@ export default function Soporte() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUser),
       });
-      if (res.ok) {
-        setIsNewUserModalOpen(false);
-        setNewUser({ name: '', email: '', role: 'Visualizador', status: 'Activo' });
-        fetchUsers();
-      }
+        if (res.ok) {
+          setIsNewUserModalOpen(false);
+          setNewUser({ name: '', email: '', password: '', role: 'Visualizador', status: 'Activo' });
+          setShowPassword(false);
+          fetchUsers();
+        }
     } catch (error) {
       console.error('Error creating user:', error);
     }
   };
 
-  const handleDeleteUser = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
     try {
-      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingUser),
+      });
+      if (res.ok) {
+        setIsEditUserModalOpen(false);
+        setEditingUser(null);
+        setShowPassword(false);
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteModal.userId) return;
+    try {
+      const res = await fetch(`/api/users/${deleteModal.userId}`, { method: 'DELETE' });
       if (res.ok) {
         fetchUsers();
       }
@@ -234,11 +263,18 @@ export default function Soporte() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                          <button 
+                            onClick={() => {
+                              setEditingUser({...user, password: ''});
+                              setIsEditUserModalOpen(true);
+                            }}
+                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                            title="Editar"
+                          >
                             <Edit2 className="h-4 w-4" />
                           </button>
                           <button 
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => setDeleteModal({ isOpen: true, userId: user.id })}
                             className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                             title="Eliminar"
                           >
@@ -309,6 +345,25 @@ export default function Soporte() {
                     <option value="Visualizador">Visualizador</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
                 <div className="pt-4 flex justify-end gap-3">
                   <button
                     type="button"
@@ -329,6 +384,119 @@ export default function Soporte() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {isEditUserModalOpen && editingUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-slate-100">
+                <h2 className="text-xl font-bold text-slate-900">Editar Usuario</h2>
+                <button 
+                  onClick={() => setIsEditUserModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateUser} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingUser.name}
+                    onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    required
+                    value={editingUser.email}
+                    onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Rol / Cargo</label>
+                  <select
+                    value={editingUser.role}
+                    onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  >
+                    <option value="Administrador">Administrador</option>
+                    <option value="Presidente">Presidente</option>
+                    <option value="Secretario">Secretario</option>
+                    <option value="Tesorero">Tesorero</option>
+                    <option value="Visualizador">Visualizador</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                  <select
+                    value={editingUser.status}
+                    onChange={(e) => setEditingUser({...editingUser, status: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  >
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nueva Contraseña (opcional)</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Dejar en blanco para mantener actual"
+                      value={editingUser.password}
+                      onChange={(e) => setEditingUser({...editingUser, password: e.target.value})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditUserModalOpen(false)}
+                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, userId: null })}
+        onConfirm={handleDeleteUser}
+        title="Eliminar Usuario"
+        message="¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer y el usuario perderá el acceso al sistema de inmediato."
+        confirmText="Eliminar Usuario"
+      />
     </div>
   );
 }

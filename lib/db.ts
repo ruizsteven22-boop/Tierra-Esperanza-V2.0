@@ -50,22 +50,26 @@ export interface Document {
   createdAt: string;
 }
 
-export type AssemblyType = 'Ordinaria' | 'Extraordinaria';
+export type AssemblyType = 'Ordinaria' | 'Extraordinaria' | 'Informativa';
 
 export interface Assembly {
   id: string;
   date: string;
   type: AssemblyType;
+  location?: string;
   attendance: number;
+  attendanceRuts?: string[];
   agreements: string;
-  status: 'Programada' | 'Realizada';
+  status: 'Programada' | 'Realizada' | 'Anulada';
 }
 
 export interface DirectiveMember {
   id: string;
   role: string;
   name: string;
+  rut: string;
   substituteName: string;
+  substituteRut: string;
   termStart: string;
   termEnd: string;
 }
@@ -76,6 +80,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: UserRole;
   status: 'Activo' | 'Inactivo';
   createdAt: string;
@@ -127,14 +132,14 @@ class Database {
   ];
 
   assemblies: Assembly[] = [
-    { id: uuidv4(), date: '2026-01-20T19:00:00Z', type: 'Ordinaria', attendance: 45, agreements: 'Se aprobó la cuota social de $50.000.', status: 'Realizada' },
-    { id: uuidv4(), date: '2026-03-15T19:00:00Z', type: 'Extraordinaria', attendance: 0, agreements: '', status: 'Programada' },
+    { id: uuidv4(), date: '2026-01-20T19:00:00Z', type: 'Ordinaria', attendance: 45, attendanceRuts: ['12.345.678-9', '9.876.543-2'], agreements: 'Se aprobó la cuota social de $50.000.', status: 'Realizada' },
+    { id: uuidv4(), date: '2026-03-15T19:00:00Z', type: 'Extraordinaria', attendance: 0, attendanceRuts: [], agreements: '', status: 'Programada' },
   ];
 
   directive: DirectiveMember[] = [
-    { id: uuidv4(), role: 'Presidente', name: 'Ana Silva', substituteName: 'Roberto Díaz', termStart: '2025-01-01', termEnd: '2027-01-01' },
-    { id: uuidv4(), role: 'Tesorero', name: 'Luis Martínez', substituteName: 'Elena Martínez', termStart: '2025-01-01', termEnd: '2027-01-01' },
-    { id: uuidv4(), role: 'Secretario', name: 'Carmen Rojas', substituteName: 'Miguel Torres', termStart: '2025-01-01', termEnd: '2027-01-01' },
+    { id: uuidv4(), role: 'Presidente', name: 'Ana Silva', rut: '12.345.678-9', substituteName: 'Roberto Díaz', substituteRut: '10.222.333-4', termStart: '2025-01-01', termEnd: '2027-01-01' },
+    { id: uuidv4(), role: 'Tesorero', name: 'Luis Martínez', rut: '9.876.543-2', substituteName: 'Elena Martínez', substituteRut: '11.444.555-6', termStart: '2025-01-01', termEnd: '2027-01-01' },
+    { id: uuidv4(), role: 'Secretario', name: 'Carmen Rojas', rut: '15.678.901-K', substituteName: 'Miguel Torres', substituteRut: '13.666.777-8', termStart: '2025-01-01', termEnd: '2027-01-01' },
   ];
 }
 

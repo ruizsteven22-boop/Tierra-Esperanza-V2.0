@@ -81,19 +81,26 @@ export default function Socios() {
 
   const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>, isFamily = false, index = -1) => {
     const formatted = formatRut(e.target.value);
-    const isValid = validateRut(formatted);
     
     if (isFamily && index !== -1) {
-      updateFamilyMember(index, 'rut', formatted);
+      const updated = [...newMember.familyMembers];
+      updated[index] = { ...updated[index], rut: formatted };
+      setNewMember({ ...newMember, familyMembers: updated });
     } else {
       setNewMember({ ...newMember, rut: formatted });
-      setRutError(isValid ? '' : 'RUT inválido');
+      setRutError(validateRut(formatted) ? '' : 'RUT inválido');
     }
   };
 
-  const handleEditRutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditRutChange = (e: React.ChangeEvent<HTMLInputElement>, isFamily = false, index = -1) => {
     const formatted = formatRut(e.target.value);
-    setEditMember({ ...editMember, rut: formatted });
+    if (isFamily && index !== -1) {
+      const updated = [...editMember.familyMembers];
+      updated[index] = { ...updated[index], rut: formatted };
+      setEditMember({ ...editMember, familyMembers: updated });
+    } else {
+      setEditMember({ ...editMember, rut: formatted });
+    }
   };
 
   const handleCreateMember = async (e: React.FormEvent) => {
@@ -102,6 +109,15 @@ export default function Socios() {
       setRutError('Debe ingresar un RUT válido antes de guardar');
       return;
     }
+
+    // Validate family members RUTs
+    for (const fm of newMember.familyMembers) {
+      if (fm.rut && !validateRut(fm.rut)) {
+        alert(`El RUT del integrante ${fm.name || ''} es inválido`);
+        return;
+      }
+    }
+
     try {
       const res = await fetch('/api/members', {
         method: 'POST',
@@ -124,9 +140,20 @@ export default function Socios() {
 
   const handleUpdateMember = async () => {
     if (!validateRut(editMember.rut)) {
-      alert('RUT inválido');
+      alert('RUT del socio es inválido');
       return;
     }
+
+    // Validate family members RUTs
+    if (editMember.familyMembers) {
+      for (const fm of editMember.familyMembers) {
+        if (fm.rut && !validateRut(fm.rut)) {
+          alert(`El RUT del integrante ${fm.name || ''} es inválido`);
+          return;
+        }
+      }
+    }
+
     try {
       const res = await fetch(`/api/members/${editMember.id}`, {
         method: 'PUT',
@@ -487,8 +514,10 @@ export default function Socios() {
                                 type="text"
                                 required
                                 value={member.rut}
-                                onChange={(e) => updateFamilyMember(index, 'rut', e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                onChange={(e) => handleRutChange(e, true, index)}
+                                className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 ${
+                                  member.rut && !validateRut(member.rut) ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                                }`}
                               />
                             </div>
                             <div>
@@ -719,7 +748,23 @@ export default function Socios() {
                   
                   {selectedMember.familyMembers && selectedMember.familyMembers.length > 0 && (
                     <div className="col-span-2 mt-4">
-                      <p className="text-xs font-bold text-slate-500 uppercase mb-2">Detalle Grupo Familiar</p>
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-xs font-bold text-slate-500 uppercase">Detalle Grupo Familiar</p>
+                        {isEditing && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...(editMember.familyMembers || [])];
+                              updated.push({ rut: '', name: '', relationship: 'Hijo/a' });
+                              setEditMember({ ...editMember, familyMembers: updated });
+                            }}
+                            className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded hover:bg-emerald-100 transition-colors flex items-center gap-1 font-bold uppercase"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Añadir Integrante
+                          </button>
+                        )}
+                      </div>
                       <div className="overflow-hidden border border-slate-200 rounded-lg">
                         <table className="w-full text-xs text-left">
                           <thead className="bg-slate-100 text-slate-700 uppercase font-bold">
@@ -727,14 +772,74 @@ export default function Socios() {
                               <th className="px-4 py-2">Nombre</th>
                               <th className="px-4 py-2">RUT</th>
                               <th className="px-4 py-2">Parentesco</th>
+                              {isEditing && <th className="px-4 py-2 w-10"></th>}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
-                            {selectedMember.familyMembers.map((fm: any, idx: number) => (
+                            {(isEditing ? editMember.familyMembers : selectedMember.familyMembers).map((fm: any, idx: number) => (
                               <tr key={idx} className="bg-white">
-                                <td className="px-4 py-2 font-medium">{fm.name}</td>
-                                <td className="px-4 py-2">{fm.rut}</td>
-                                <td className="px-4 py-2">{fm.relationship}</td>
+                                <td className="px-4 py-2">
+                                  {isEditing ? (
+                                    <input 
+                                      type="text" 
+                                      value={fm.name} 
+                                      onChange={(e) => {
+                                        const updated = [...editMember.familyMembers];
+                                        updated[idx] = { ...updated[idx], name: e.target.value };
+                                        setEditMember({ ...editMember, familyMembers: updated });
+                                      }}
+                                      className="w-full px-2 py-1 border border-slate-200 rounded focus:ring-1 focus:ring-emerald-500"
+                                    />
+                                  ) : (
+                                    <span className="font-medium">{fm.name}</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2">
+                                  {isEditing ? (
+                                    <input 
+                                      type="text" 
+                                      value={fm.rut} 
+                                      onChange={(e) => handleEditRutChange(e, true, idx)}
+                                      className={`w-full px-2 py-1 border rounded focus:ring-1 focus:ring-emerald-500 ${
+                                        fm.rut && !validateRut(fm.rut) ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                                      }`}
+                                    />
+                                  ) : (
+                                    <span>{fm.rut}</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2">
+                                  {isEditing ? (
+                                    <select
+                                      value={fm.relationship}
+                                      onChange={(e) => {
+                                        const updated = [...editMember.familyMembers];
+                                        updated[idx] = { ...updated[idx], relationship: e.target.value };
+                                        setEditMember({ ...editMember, familyMembers: updated });
+                                      }}
+                                      className="w-full px-2 py-1 border border-slate-200 rounded focus:ring-1 focus:ring-emerald-500 bg-white"
+                                    >
+                                      {relationshipOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    </select>
+                                  ) : (
+                                    <span>{fm.relationship}</span>
+                                  )}
+                                </td>
+                                {isEditing && (
+                                  <td className="px-4 py-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...editMember.familyMembers];
+                                        updated.splice(idx, 1);
+                                        setEditMember({ ...editMember, familyMembers: updated });
+                                      }}
+                                      className="text-slate-400 hover:text-red-500 transition-colors"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  </td>
+                                )}
                               </tr>
                             ))}
                           </tbody>

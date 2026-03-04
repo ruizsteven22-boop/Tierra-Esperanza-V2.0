@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Save, Loader2, Building, Mail, Phone, MapPin, User, ShieldAlert, Upload, Image as ImageIcon, AlertCircle, CheckCircle2, Download, FileUp, RotateCcw, Trash2 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { validateRut, formatRut } from '@/lib/chile-data';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 export default function Configuracion() {
   const { canAccess } = useAuth();
@@ -14,6 +15,7 @@ export default function Configuracion() {
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [rutError, setRutError] = useState('');
+  const [resetModalOpen, setResetModalOpen] = useState(false);
 
   useEffect(() => {
     if (!canAccess('/configuracion')) {
@@ -103,25 +105,23 @@ export default function Configuracion() {
   };
 
   const handleReset = async () => {
-    if (confirm('¡ADVERTENCIA! Esta acción eliminará todos los socios, transacciones, asambleas y documentos. ¿Está completamente seguro de restablecer a fábrica?')) {
-      setMaintenanceLoading(true);
-      try {
-        const res = await fetch('/api/maintenance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'reset' }),
-        });
-        if (res.ok) {
-          alert('Sistema restablecido exitosamente. La página se recargará.');
-          window.location.reload();
-        } else {
-          alert('Error al restablecer el sistema');
-        }
-      } catch (error) {
-        alert('Error de red');
-      } finally {
-        setMaintenanceLoading(false);
+    setMaintenanceLoading(true);
+    try {
+      const res = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset' }),
+      });
+      if (res.ok) {
+        alert('Sistema restablecido exitosamente. La página se recargará.');
+        window.location.reload();
+      } else {
+        alert('Error al restablecer el sistema');
       }
+    } catch (error) {
+      alert('Error de red');
+    } finally {
+      setMaintenanceLoading(false);
     }
   };
 
@@ -292,6 +292,60 @@ export default function Configuracion() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-red-600 flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5" />
+            Mantenimiento de Datos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={handleExport}
+              className="flex flex-col items-center justify-center p-6 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors group"
+            >
+              <Download className="h-8 w-8 text-slate-400 group-hover:text-emerald-600 mb-2" />
+              <span className="font-bold text-slate-900">Exportar Datos</span>
+              <span className="text-xs text-slate-500 text-center mt-1">Descarga un respaldo completo en formato JSON</span>
+            </button>
+
+            <label className="flex flex-col items-center justify-center p-6 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors group cursor-pointer">
+              <FileUp className="h-8 w-8 text-slate-400 group-hover:text-blue-600 mb-2" />
+              <span className="font-bold text-slate-900">Importar Datos</span>
+              <span className="text-xs text-slate-500 text-center mt-1">Carga un archivo de respaldo previamente exportado</span>
+              <input type="file" accept=".json" className="hidden" onChange={handleImport} disabled={maintenanceLoading} />
+            </label>
+
+            <button
+              onClick={() => setResetModalOpen(true)}
+              disabled={maintenanceLoading}
+              className="flex flex-col items-center justify-center p-6 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-colors group"
+            >
+              <RotateCcw className="h-8 w-8 text-red-300 group-hover:text-red-600 mb-2" />
+              <span className="font-bold text-red-900">Restablecer Sistema</span>
+              <span className="text-xs text-red-500 text-center mt-1">Elimina toda la información y vuelve al estado inicial</span>
+            </button>
+          </div>
+          
+          {maintenanceLoading && (
+            <div className="flex items-center justify-center gap-2 text-slate-500 text-sm animate-pulse">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Procesando solicitud de mantenimiento...
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <ConfirmationModal
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        onConfirm={handleReset}
+        title="Restablecer Sistema"
+        message="¡ADVERTENCIA! Esta acción eliminará todos los socios, transacciones, asambleas y documentos. ¿Está completamente seguro de restablecer a fábrica? Esta acción no se puede deshacer."
+        confirmText="Restablecer Todo"
+      />
     </div>
   );
 }
