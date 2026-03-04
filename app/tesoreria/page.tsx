@@ -31,6 +31,12 @@ export default function Tesoreria() {
   const [selectedTx, setSelectedTx] = useState<any>(null);
   const [isNewTxModalOpen, setIsNewTxModalOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  
+  const [incomeCategories, setIncomeCategories] = useState(['Cuotas', 'Donación', 'Aporte Municipal', 'Eventos', 'Otros']);
+  const [expenseCategories, setExpenseCategories] = useState(['Mantenimiento', 'Gastos Administrativos', 'Legal', 'Servicios Básicos', 'Insumos', 'Otros']);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
   const [newTx, setNewTx] = useState({
     type: 'ingreso', amount: 0, description: '', category: 'Cuotas',
     memberId: '', memberName: '', memberRut: ''
@@ -420,17 +426,60 @@ export default function Tesoreria() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
-                  <select
-                    value={newTx.category}
-                    onChange={(e) => setNewTx({...newTx, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                  >
-                    <option value="Cuotas">Cuotas</option>
-                    <option value="Donación">Donación</option>
-                    <option value="Gastos Operativos">Gastos Operativos</option>
-                    <option value="Servicios">Servicios</option>
-                    <option value="Otros">Otros</option>
-                  </select>
+                  {!isAddingCategory ? (
+                    <div className="flex gap-2">
+                      <select
+                        value={newTx.category}
+                        onChange={(e) => {
+                          if (e.target.value === 'NEW') {
+                            setIsAddingCategory(true);
+                          } else {
+                            setNewTx({...newTx, category: e.target.value});
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                      >
+                        {(newTx.type === 'ingreso' ? incomeCategories : expenseCategories).map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                        {newTx.type === 'ingreso' && (
+                          <option value="NEW" className="text-emerald-600 font-bold">+ Nueva Categoría...</option>
+                        )}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Nombre de categoría"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newCategoryName.trim()) {
+                            setIncomeCategories(prev => [...prev.filter(c => c !== 'Otros'), newCategoryName.trim(), 'Otros']);
+                            setNewTx({...newTx, category: newCategoryName.trim()});
+                            setNewCategoryName('');
+                            setIsAddingCategory(false);
+                          }
+                        }}
+                        className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold"
+                      >
+                        Añadir
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingCategory(false)}
+                        className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold"
+                      >
+                        X
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>

@@ -113,6 +113,7 @@ class Database {
     { id: uuidv4(), name: 'Ana Silva', email: 'ana.silva@tierraesperanza.cl', role: 'Presidente', status: 'Activo', createdAt: new Date().toISOString(), password: 'ana' },
     { id: uuidv4(), name: 'Luis Martínez', email: 'luis.martinez@tierraesperanza.cl', role: 'Tesorero', status: 'Activo', createdAt: new Date().toISOString(), password: 'luis' },
     { id: uuidv4(), name: 'Carmen Rojas', email: 'carmen.rojas@tierraesperanza.cl', role: 'Secretario', status: 'Activo', createdAt: new Date().toISOString(), password: 'carmen' },
+    { id: uuidv4(), name: 'Secretaría General', email: 'secretaria@tierraesperanza.cl', role: 'Secretario', status: 'Activo', createdAt: new Date().toISOString(), password: 'sec' },
   ];
 
   members: Member[] = [

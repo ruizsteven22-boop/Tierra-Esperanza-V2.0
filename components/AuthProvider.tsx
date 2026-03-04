@@ -24,19 +24,25 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [{ user, mounted, loading }, setAuthState] = useState({
+    user: null as User | null,
+    mounted: false,
+    loading: true
+  });
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setMounted(true);
-    setLoading(false);
+    const user = savedUser ? JSON.parse(savedUser) : null;
+    
+    setTimeout(() => {
+      setAuthState({
+        user,
+        mounted: true,
+        loading: false
+      });
+    }, 0);
   }, []);
 
   useEffect(() => {
@@ -50,13 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, pathname, mounted, loading, router]);
 
   const login = (userData: User) => {
-    setUser(userData);
+    setAuthState(prev => ({ ...prev, user: userData }));
     localStorage.setItem('user', JSON.stringify(userData));
     router.push('/');
   };
 
   const logout = () => {
-    setUser(null);
+    setAuthState(prev => ({ ...prev, user: null }));
     localStorage.removeItem('user');
     router.push('/login');
   };
