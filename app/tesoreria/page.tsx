@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, ArrowUpRight, ArrowDownRight, DollarSign, FileText, Printer, Download, MessageCircle, Mail, X, ShieldAlert, BarChart3, PieChart as PieChartIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, DollarSign, FileText, Printer, Download, MessageCircle, Mail, X, ShieldAlert, BarChart3, PieChart as PieChartIcon, AlertCircle, CheckCircle2, PenTool } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -24,14 +24,16 @@ import {
 } from 'recharts';
 
 export default function Tesoreria() {
-  const { canAccess } = useAuth();
+  const { canAccess, user, role } = useAuth();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTx, setSelectedTx] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [isNewTxModalOpen, setIsNewTxModalOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   
   const [incomeCategories, setIncomeCategories] = useState(['Cuotas', 'Donación', 'Aporte Municipal', 'Eventos', 'Otros']);
   const [expenseCategories, setExpenseCategories] = useState(['Mantenimiento', 'Gastos Administrativos', 'Legal', 'Servicios Básicos', 'Insumos', 'Otros']);
@@ -111,12 +113,37 @@ export default function Tesoreria() {
     }
   };
 
-  const income = transactions.filter(t => t.type === 'ingreso').reduce((acc, t) => acc + t.amount, 0);
-  const expenses = transactions.filter(t => t.type === 'egreso').reduce((acc, t) => acc + t.amount, 0);
+  const handleUpdateTx = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/transactions/${selectedTx.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(selectedTx),
+      });
+      if (res.ok) {
+        setIsEditing(false);
+        fetchData();
+        setSelectedTx(null);
+      }
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+    }
+  };
+
+  const filteredTransactions = transactions.filter(t => {
+    const txDate = new Date(t.date);
+    const start = dateRange.start ? new Date(dateRange.start) : new Date(0);
+    const end = dateRange.end ? new Date(dateRange.end) : new Date(8640000000000000);
+    return txDate >= start && txDate <= end;
+  });
+
+  const income = filteredTransactions.filter(t => t.type === 'ingreso').reduce((acc, t) => acc + t.amount, 0);
+  const expenses = filteredTransactions.filter(t => t.type === 'egreso').reduce((acc, t) => acc + t.amount, 0);
   const balance = income - expenses;
 
   // Prepare data for chart
-  const chartData = transactions.reduce((acc: any[], t) => {
+  const chartData = filteredTransactions.reduce((acc: any[], t) => {
     const month = format(new Date(t.date), 'MMM yyyy', { locale: es });
     const existing = acc.find(d => d.name === month);
     if (existing) {
@@ -202,6 +229,21 @@ export default function Tesoreria() {
           <p className="text-slate-500 mt-2">Control de flujo de caja y reportes financieros.</p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-lg">
+            <input 
+              type="date" 
+              value={dateRange.start} 
+              onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+              className="text-sm border-none focus:ring-0"
+            />
+            <span className="text-slate-400">-</span>
+            <input 
+              type="date" 
+              value={dateRange.end} 
+              onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+              className="text-sm border-none focus:ring-0"
+            />
+          </div>
           <button 
             onClick={() => setShowReportModal(true)}
             className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors"
@@ -298,10 +340,10 @@ export default function Tesoreria() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-              {transactions.length === 0 ? (
-                <p className="text-sm text-slate-500">No hay movimientos registrados.</p>
+              {filteredTransactions.length === 0 ? (
+                <p className="text-sm text-slate-500">No hay movimientos registrados para el rango seleccionado.</p>
               ) : (
-                transactions.map((t) => (
+                filteredTransactions.map((t) => (
                   <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 last:border-0 last:pb-0 gap-2">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-full ${t.type === 'ingreso' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
@@ -637,23 +679,36 @@ export default function Tesoreria() {
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-emerald-600" />
-                Comprobante
+                {isEditing ? 'Editar Transacción' : 'Comprobante'}
               </h2>
               <div className="flex items-center gap-2">
-                <button onClick={handlePrint} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="Imprimir">
-                  <Printer className="h-4 w-4" />
-                </button>
-                <button onClick={handleDownloadPDF} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="Descargar PDF">
-                  <Download className="h-4 w-4" />
-                </button>
-                <button onClick={handleShareWA} className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors" title="Enviar por WhatsApp">
-                  <MessageCircle className="h-4 w-4" />
-                </button>
-                <button onClick={handleShareEmail} className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-colors" title="Enviar por Correo">
-                  <Mail className="h-4 w-4" />
-                </button>
+                {!isEditing && (
+                  <>
+                    <button onClick={handlePrint} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="Imprimir">
+                      <Printer className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleDownloadPDF} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="Descargar PDF">
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleShareWA} className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors" title="Enviar por WhatsApp">
+                      <MessageCircle className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleShareEmail} className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-colors" title="Enviar por Correo">
+                      <Mail className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+                {(role === 'Administrador' || role === 'Admin' || role === 'Tesorero') && (
+                  <button 
+                    onClick={() => setIsEditing(!isEditing)} 
+                    className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-slate-200 text-slate-700' : 'text-slate-500 hover:text-emerald-600 hover:bg-emerald-50'}`}
+                    title={isEditing ? 'Cancelar Edición' : 'Editar'}
+                  >
+                    <PenTool className="h-4 w-4" />
+                  </button>
+                )}
                 <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                <button onClick={() => setSelectedTx(null)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <button onClick={() => { setSelectedTx(null); setIsEditing(false); }} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -661,55 +716,71 @@ export default function Tesoreria() {
             
             {/* Preview Area (also used for PDF generation) */}
             <div className="p-8 overflow-y-auto bg-white" id="print-area">
-              <div className="text-center mb-6 border-b-2 border-slate-800 pb-4">
-                <h1 className="text-xl font-bold uppercase tracking-wider text-slate-900">{config?.name}</h1>
-                <p className="text-xs text-slate-600 mt-1">RUT: {config?.rut} | {config?.address}</p>
-              </div>
-              
-              <h2 className="text-lg font-bold text-center mb-6 uppercase tracking-widest text-slate-800">
-                Recibo de {selectedTx.type === 'ingreso' ? 'Ingreso' : 'Egreso'}
-              </h2>
-
-              <div className="space-y-4 text-slate-800 text-sm">
-                <div className="flex justify-between border-b border-slate-100 pb-2">
-                  <span className="font-semibold text-slate-500">N° Comprobante:</span>
-                  <span className="font-mono">{selectedTx.id.substring(0, 8).toUpperCase()}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2">
-                  <span className="font-semibold text-slate-500">Fecha:</span>
-                  <span>{format(new Date(selectedTx.date), "d 'de' MMMM 'de' yyyy", { locale: es })}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2">
-                  <span className="font-semibold text-slate-500">Categoría:</span>
-                  <span>{selectedTx.category}</span>
-                </div>
-                
-                {selectedTx.memberName && (
-                  <div className="flex flex-col border-b border-slate-100 pb-2">
-                    <span className="font-semibold text-slate-500">Socio:</span>
-                    <span className="font-bold">{selectedTx.memberName}</span>
-                    <span className="text-xs text-slate-400">RUT: {selectedTx.memberRut}</span>
+              {isEditing ? (
+                <form onSubmit={handleUpdateTx} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">Monto ($)</label>
+                    <input type="number" value={selectedTx.amount} onChange={(e) => setSelectedTx({...selectedTx, amount: Number(e.target.value)})} className="w-full p-2 border rounded-lg" />
                   </div>
-                )}
-                <div className="flex justify-between border-b border-slate-100 pb-2">
-                  <span className="font-semibold text-slate-500">Descripción:</span>
-                  <span className="text-right max-w-[200px]">{selectedTx.description}</span>
-                </div>
-                
-                <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
-                  <span className="font-bold text-base uppercase">Total:</span>
-                  <span className="text-xl font-bold text-slate-900">${selectedTx.amount.toLocaleString('es-CL')}</span>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700">Descripción</label>
+                    <textarea value={selectedTx.description} onChange={(e) => setSelectedTx({...selectedTx, description: e.target.value})} className="w-full p-2 border rounded-lg" />
+                  </div>
+                  <button type="submit" className="w-full bg-emerald-600 text-white py-2 rounded-lg font-medium">Guardar Cambios</button>
+                </form>
+              ) : (
+                <>
+                  <div className="text-center mb-6 border-b-2 border-slate-800 pb-4">
+                    <h1 className="text-xl font-bold uppercase tracking-wider text-slate-900">{config?.name}</h1>
+                    <p className="text-xs text-slate-600 mt-1">RUT: {config?.rut} | {config?.address}</p>
+                  </div>
+                  
+                  <h2 className="text-lg font-bold text-center mb-6 uppercase tracking-widest text-slate-800">
+                    Recibo de {selectedTx.type === 'ingreso' ? 'Ingreso' : 'Egreso'}
+                  </h2>
 
-                <div className="mt-12 pt-8">
-                  <div className="flex justify-around">
-                    <div className="text-center border-t border-slate-800 w-32 pt-2">
-                      <p className="font-bold text-xs">Tesorero(a)</p>
-                      <p className="text-[10px] text-slate-500">{config?.name}</p>
+                  <div className="space-y-4 text-slate-800 text-sm">
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="font-semibold text-slate-500">N° Comprobante:</span>
+                      <span className="font-mono">{selectedTx.id.substring(0, 8).toUpperCase()}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="font-semibold text-slate-500">Fecha:</span>
+                      <span>{format(new Date(selectedTx.date), "d 'de' MMMM 'de' yyyy", { locale: es })}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="font-semibold text-slate-500">Categoría:</span>
+                      <span>{selectedTx.category}</span>
+                    </div>
+                    
+                    {selectedTx.memberName && (
+                      <div className="flex flex-col border-b border-slate-100 pb-2">
+                        <span className="font-semibold text-slate-500">Socio:</span>
+                        <span className="font-bold">{selectedTx.memberName}</span>
+                        <span className="text-xs text-slate-400">RUT: {selectedTx.memberRut}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="font-semibold text-slate-500">Descripción:</span>
+                      <span className="text-right max-w-[200px]">{selectedTx.description}</span>
+                    </div>
+                    
+                    <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
+                      <span className="font-bold text-base uppercase">Total:</span>
+                      <span className="text-xl font-bold text-slate-900">${selectedTx.amount.toLocaleString('es-CL')}</span>
+                    </div>
+
+                    <div className="mt-12 pt-8">
+                      <div className="flex justify-around">
+                        <div className="text-center border-t border-slate-800 w-32 pt-2">
+                          <p className="font-bold text-xs">Tesorero(a)</p>
+                          <p className="text-[10px] text-slate-500">{config?.name}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </motion.div>
         </div>
