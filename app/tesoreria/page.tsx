@@ -485,9 +485,7 @@ export default function Tesoreria() {
                         {(newTx.type === 'ingreso' ? incomeCategories : expenseCategories).map(cat => (
                           <option key={cat} value={cat}>{cat}</option>
                         ))}
-                        {newTx.type === 'ingreso' && (
-                          <option value="NEW" className="text-emerald-600 font-bold">+ Nueva Categoría...</option>
-                        )}
+                        <option value="NEW" className="text-emerald-600 font-bold">+ Nueva Categoría...</option>
                       </select>
                     </div>
                   ) : (
@@ -504,7 +502,11 @@ export default function Tesoreria() {
                         type="button"
                         onClick={() => {
                           if (newCategoryName.trim()) {
-                            setIncomeCategories(prev => [...prev.filter(c => c !== 'Otros'), newCategoryName.trim(), 'Otros']);
+                            if (newTx.type === 'ingreso') {
+                              setIncomeCategories(prev => [...prev.filter(c => c !== 'Otros'), newCategoryName.trim(), 'Otros']);
+                            } else {
+                              setExpenseCategories(prev => [...prev.filter(c => c !== 'Otros'), newCategoryName.trim(), 'Otros']);
+                            }
                             setNewTx({...newTx, category: newCategoryName.trim()});
                             setNewCategoryName('');
                             setIsAddingCategory(false);

@@ -564,6 +564,9 @@ export default function Socios() {
                                   member.rut && !validateRut(member.rut) ? 'border-red-300 bg-red-50' : 'border-slate-200'
                                 }`}
                               />
+                              {member.rut && !validateRut(member.rut) && (
+                                <p className="text-[10px] text-red-500 font-bold uppercase mt-1">RUT Inválido</p>
+                              )}
                             </div>
                             <div>
                               <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Parentesco</label>
@@ -849,6 +852,9 @@ export default function Socios() {
                                         fm.rut && !validateRut(fm.rut) ? 'border-red-300 bg-red-50' : 'border-slate-200'
                                       }`}
                                     />
+                                    {fm.rut && !validateRut(fm.rut) && (
+                                      <p className="text-[10px] text-red-500 font-bold uppercase mt-1">RUT Inválido</p>
+                                    )}
                                   ) : (
                                     <span>{fm.rut}</span>
                                   )}
