@@ -355,7 +355,20 @@ export default function Socios() {
                       </td>
                       <td className="px-6 py-4">{member.address}</td>
                       <td className="px-6 py-4 text-center">{member.familySize}</td>
-                      <td className="px-6 py-4 text-center">{member.registroHogarSocial || 0}%</td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex flex-col items-center">
+                          <span className="font-medium">{member.registroHogarSocial || 0}%</span>
+                          <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                            (member.registroHogarSocial || 0) <= 40 ? 'bg-emerald-100 text-emerald-700' :
+                            (member.registroHogarSocial || 0) <= 90 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {(member.registroHogarSocial || 0) <= 40 ? 'Cumple' :
+                             (member.registroHogarSocial || 0) <= 90 ? 'Observado' :
+                             'No Cumple'}
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           member.status === 'Activo' ? 'bg-emerald-100 text-emerald-700' :
@@ -815,7 +828,18 @@ export default function Socios() {
                         className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-emerald-500"
                       />
                     ) : (
-                      <p className="font-medium">{selectedMember.registroHogarSocial || 0}%</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{selectedMember.registroHogarSocial || 0}%</p>
+                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                          (selectedMember.registroHogarSocial || 0) <= 40 ? 'bg-emerald-100 text-emerald-700' :
+                          (selectedMember.registroHogarSocial || 0) <= 90 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {(selectedMember.registroHogarSocial || 0) <= 40 ? 'Cumple' :
+                           (selectedMember.registroHogarSocial || 0) <= 90 ? 'Observado' :
+                           'No Cumple'}
+                        </span>
+                      </div>
                     )}
                   </div>
                   <div className="bg-slate-50 p-3 rounded border border-slate-100">

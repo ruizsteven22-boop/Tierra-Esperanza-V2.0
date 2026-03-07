@@ -111,14 +111,23 @@ export default function Dashboard() {
                 <div>
                   <div className="text-xl font-bold text-emerald-600">{data.hogarSocialSegments.cumple}</div>
                   <div className="text-[10px] text-slate-500 uppercase">Cumple</div>
+                  <div className="text-[10px] text-slate-400">
+                    {data.totalMembers > 0 ? Math.round((data.hogarSocialSegments.cumple / data.totalMembers) * 100) : 0}%
+                  </div>
                 </div>
                 <div>
                   <div className="text-xl font-bold text-yellow-600">{data.hogarSocialSegments.observado}</div>
                   <div className="text-[10px] text-slate-500 uppercase">Obs.</div>
+                  <div className="text-[10px] text-slate-400">
+                    {data.totalMembers > 0 ? Math.round((data.hogarSocialSegments.observado / data.totalMembers) * 100) : 0}%
+                  </div>
                 </div>
                 <div>
                   <div className="text-xl font-bold text-red-600">{data.hogarSocialSegments.noCumple}</div>
                   <div className="text-[10px] text-slate-500 uppercase">No Cumple</div>
+                  <div className="text-[10px] text-slate-400">
+                    {data.totalMembers > 0 ? Math.round((data.hogarSocialSegments.noCumple / data.totalMembers) * 100) : 0}%
+                  </div>
                 </div>
               </div>
             </CardContent>
