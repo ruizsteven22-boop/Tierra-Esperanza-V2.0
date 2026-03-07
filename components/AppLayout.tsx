@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/components/AuthProvider';
 import { Sidebar } from '@/components/Sidebar';
+import TopBar from '@/components/TopBar';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
@@ -32,11 +33,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden w-full">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
-        <div className="max-w-7xl mx-auto w-full">
-          {children}
-        </div>
-      </main>
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <TopBar />
+        <main className="flex-1 overflow-y-auto pt-16 p-4 lg:p-8 bg-slate-50">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

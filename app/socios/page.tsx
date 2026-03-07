@@ -844,17 +844,19 @@ export default function Socios() {
                                 </td>
                                 <td className="px-4 py-2">
                                   {isEditing ? (
-                                    <input 
-                                      type="text" 
-                                      value={fm.rut} 
-                                      onChange={(e) => handleEditRutChange(e, true, idx)}
-                                      className={`w-full px-2 py-1 border rounded focus:ring-1 focus:ring-emerald-500 ${
-                                        fm.rut && !validateRut(fm.rut) ? 'border-red-300 bg-red-50' : 'border-slate-200'
-                                      }`}
-                                    />
-                                    {fm.rut && !validateRut(fm.rut) && (
-                                      <p className="text-[10px] text-red-500 font-bold uppercase mt-1">RUT Inválido</p>
-                                    )}
+                                    <div className="flex flex-col">
+                                      <input 
+                                        type="text" 
+                                        value={fm.rut} 
+                                        onChange={(e) => handleEditRutChange(e, true, idx)}
+                                        className={`w-full px-2 py-1 border rounded focus:ring-1 focus:ring-emerald-500 ${
+                                          fm.rut && !validateRut(fm.rut) ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                                        }`}
+                                      />
+                                      {fm.rut && !validateRut(fm.rut) && (
+                                        <p className="text-[10px] text-red-500 font-bold uppercase mt-1">RUT Inválido</p>
+                                      )}
+                                    </div>
                                   ) : (
                                     <span>{fm.rut}</span>
                                   )}
