@@ -24,26 +24,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [{ user, mounted, loading }, setAuthState] = useState({
-    user: null as User | null,
-    mounted: false,
-    loading: true
+  const [authState, setAuthState] = useState(() => {
+    const savedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    return {
+      user: savedUser ? JSON.parse(savedUser) : null,
+      mounted: true,
+      loading: false
+    };
   });
+  const { user, mounted, loading } = authState;
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    const user = savedUser ? JSON.parse(savedUser) : null;
-    
-    setTimeout(() => {
-      setAuthState({
-        user,
-        mounted: true,
-        loading: false
-      });
-    }, 0);
-  }, []);
 
   useEffect(() => {
     if (mounted && !loading) {
@@ -76,6 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Base paths everyone can access
     if (path === '/' || path === '/socios' || path === '/directiva') return true;
 
+    if (role === 'Socio') {
+      return path === '/socios' || path === '/tesoreria' || path === '/directiva';
+    }
+
     if (role === 'Tesorero') {
       return path === '/tesoreria';
     }
@@ -86,10 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return false;
   };
-
-  if (!mounted) {
-    return null;
-  }
 
   return (
     <AuthContext.Provider value={{ 
