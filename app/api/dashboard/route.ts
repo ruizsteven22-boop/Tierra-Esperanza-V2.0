@@ -8,6 +8,12 @@ export async function GET() {
   const activeMembers = db.members.filter(m => m.status === 'Activo').length;
   const totalMembers = db.members.length;
   
+  const hogarSocialSegments = {
+    cumple: db.members.filter(m => (m.registroHogarSocial || 0) <= 40).length,
+    observado: db.members.filter(m => (m.registroHogarSocial || 0) > 40 && (m.registroHogarSocial || 0) <= 90).length,
+    noCumple: db.members.filter(m => (m.registroHogarSocial || 0) > 90).length,
+  };
+  
   const now = new Date();
   const upcomingAssemblies = db.assemblies
     .filter(a => new Date(a.date) > now)
@@ -19,6 +25,7 @@ export async function GET() {
     expenses,
     activeMembers,
     totalMembers,
+    hogarSocialSegments,
     upcomingAssemblies,
   });
 }

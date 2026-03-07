@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DirectiveIdCard from '@/components/DirectiveIdCard';
-import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin, Edit2, Trash2, MessageCircle, Mail, Share2, MoreVertical, Bell, Printer, Download, UserCheck, AlertCircle, QrCode, IdCard } from 'lucide-react';
+import { Building2, Calendar, Users, FileText, CheckCircle2, ShieldAlert, X, MapPin, Edit2, Trash2, MessageCircle, Mail, Share2, MoreVertical, Bell, Printer, Download, UserCheck, AlertCircle, QrCode, IdCard, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
@@ -17,6 +17,7 @@ export default function Directiva() {
   const [directive, setDirective] = useState<any[]>([]);
   const [assemblies, setAssemblies] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +32,7 @@ export default function Directiva() {
   const [selectedDirectiveMember, setSelectedDirectiveMember] = useState<any>(null);
   const [directiveRutError, setDirectiveRutError] = useState('');
   const [attendanceSearch, setAttendanceSearch] = useState('');
+  const [newTask, setNewTask] = useState({ description: '', deadline: '', status: 'Pendiente' });
 
   const [newAssembly, setNewAssembly] = useState({
     type: 'Ordinaria', date: '', status: 'Programada', location: '', agreements: '', attendance: 0
@@ -41,12 +43,14 @@ export default function Directiva() {
       fetch('/api/directive').then(res => res.json()),
       fetch('/api/assemblies').then(res => res.json()),
       fetch('/api/config').then(res => res.json()),
-      fetch('/api/members').then(res => res.json())
-    ]).then(([dirData, assemData, configData, membersData]) => {
+      fetch('/api/members').then(res => res.json()),
+      fetch('/api/tasks').then(res => res.json())
+    ]).then(([dirData, assemData, configData, membersData, tasksData]) => {
       setDirective(dirData);
       setAssemblies(assemData.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setConfig(configData);
       setMembers(membersData);
+      setTasks(tasksData);
       setLoading(false);
     });
   };
@@ -403,6 +407,72 @@ export default function Directiva() {
                 </div>
               ))
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-emerald-600" />
+            Tareas Pendientes de la Directiva
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Descripción de la tarea"
+                value={newTask.description}
+                onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <input
+                type="date"
+                value={newTask.deadline}
+                onChange={(e) => setNewTask({...newTask, deadline: e.target.value})}
+                className="px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <button
+                onClick={() => {
+                  fetch('/api/tasks', {
+                    method: 'POST',
+                    body: JSON.stringify(newTask),
+                  }).then(() => {
+                    setNewTask({ description: '', deadline: '', status: 'Pendiente' });
+                    fetchData();
+                  });
+                }}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {tasks.map(task => (
+                <div key={task.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <div>
+                    <p className="font-medium text-slate-900">{task.description}</p>
+                    <p className="text-xs text-slate-500">Fecha límite: {task.deadline}</p>
+                  </div>
+                  <select
+                    value={task.status}
+                    onChange={(e) => {
+                      fetch('/api/tasks', {
+                        method: 'PUT',
+                        body: JSON.stringify({ ...task, status: e.target.value }),
+                      }).then(() => fetchData());
+                    }}
+                    className="px-2 py-1 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En Progreso">En Progreso</option>
+                    <option value="Completada">Completada</option>
+                  </select>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

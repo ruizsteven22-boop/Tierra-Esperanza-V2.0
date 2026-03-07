@@ -26,7 +26,7 @@ export default function Socios() {
   const [memberTransactions, setMemberTransactions] = useState<any[]>([]);
   const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
   const [newMember, setNewMember] = useState({
-    name: '', rut: '', email: '', phone: '', address: '', region: '', commune: '', familyMembers: [] as any[], status: 'Activo'
+    name: '', rut: '', email: '', phone: '', address: '', region: '', commune: '', familyMembers: [] as any[], status: 'Activo', registroHogarSocial: 0
   });
   const [rutError, setRutError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -323,6 +323,7 @@ export default function Socios() {
                   <th className="px-6 py-3">Contacto</th>
                   <th className="px-6 py-3">Dirección</th>
                   <th className="px-6 py-3">Grupo Fam.</th>
+                  <th className="px-6 py-3">RHS</th>
                   <th className="px-6 py-3">Estado</th>
                   <th className="px-6 py-3 text-right">Acciones</th>
                 </tr>
@@ -354,6 +355,7 @@ export default function Socios() {
                       </td>
                       <td className="px-6 py-4">{member.address}</td>
                       <td className="px-6 py-4 text-center">{member.familySize}</td>
+                      <td className="px-6 py-4 text-center">{member.registroHogarSocial || 0}%</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           member.status === 'Activo' ? 'bg-emerald-100 text-emerald-700' :
@@ -426,6 +428,18 @@ export default function Socios() {
                 </button>
               </div>
               <form onSubmit={handleCreateMember} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Registro de Hogar Social (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    required
+                    value={newMember.registroHogarSocial}
+                    onChange={(e) => setNewMember({...newMember, registroHogarSocial: parseInt(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
                   <input
@@ -787,6 +801,21 @@ export default function Socios() {
                       </div>
                     ) : (
                       <p className="font-medium">{selectedMember.address}, {selectedMember.commune}, {selectedMember.region}</p>
+                    )}
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded border border-slate-100">
+                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Registro de Hogar Social</p>
+                    {isEditing ? (
+                      <input 
+                        type="number" 
+                        min="0"
+                        max="100"
+                        value={editMember.registroHogarSocial || 0}
+                        onChange={(e) => setEditMember({...editMember, registroHogarSocial: parseInt(e.target.value) || 0})}
+                        className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-emerald-500"
+                      />
+                    ) : (
+                      <p className="font-medium">{selectedMember.registroHogarSocial || 0}%</p>
                     )}
                   </div>
                   <div className="bg-slate-50 p-3 rounded border border-slate-100">

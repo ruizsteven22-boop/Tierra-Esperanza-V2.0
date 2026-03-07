@@ -21,6 +21,7 @@ export interface Member {
   familyMembers?: FamilyMember[];
   status: MemberStatus;
   createdAt: string;
+  registroHogarSocial?: number;
 }
 
 export type TransactionType = 'ingreso' | 'egreso';
@@ -74,6 +75,13 @@ export interface DirectiveMember {
   termEnd: string;
 }
 
+export interface Task {
+  id: string;
+  description: string;
+  deadline: string;
+  status: 'Pendiente' | 'En Progreso' | 'Completada';
+}
+
 export type UserRole = 'Admin' | 'Presidente' | 'Secretario' | 'Tesorero' | 'Socio';
 
 export interface User {
@@ -117,9 +125,9 @@ class Database {
   ];
 
   members: Member[] = [
-    { id: uuidv4(), rut: '12.345.678-9', name: 'Juan Pérez', email: 'juan@example.com', phone: '+56912345678', address: 'Pasaje Los Pinos 123', familySize: 4, status: 'Activo', createdAt: new Date().toISOString() },
-    { id: uuidv4(), rut: '9.876.543-2', name: 'María González', email: 'maria@example.com', phone: '+56987654321', address: 'Av. Principal 456', familySize: 2, status: 'Activo', createdAt: new Date().toISOString() },
-    { id: uuidv4(), rut: '15.678.901-K', name: 'Carlos Soto', email: 'carlos@example.com', phone: '+56911223344', address: 'Calle Las Rosas 789', familySize: 3, status: 'Pendiente', createdAt: new Date().toISOString() },
+    { id: uuidv4(), rut: '12.345.678-9', name: 'Juan Pérez', email: 'juan@example.com', phone: '+56912345678', address: 'Pasaje Los Pinos 123', familySize: 4, status: 'Activo', createdAt: new Date().toISOString(), registroHogarSocial: 30 },
+    { id: uuidv4(), rut: '9.876.543-2', name: 'María González', email: 'maria@example.com', phone: '+56987654321', address: 'Av. Principal 456', familySize: 2, status: 'Activo', createdAt: new Date().toISOString(), registroHogarSocial: 60 },
+    { id: uuidv4(), rut: '15.678.901-K', name: 'Carlos Soto', email: 'carlos@example.com', phone: '+56911223344', address: 'Calle Las Rosas 789', familySize: 3, status: 'Pendiente', createdAt: new Date().toISOString(), registroHogarSocial: 95 },
   ];
 
   transactions: Transaction[] = [
@@ -145,6 +153,8 @@ class Database {
     { id: uuidv4(), role: 'Secretario', name: 'Carmen Rojas', rut: '15.678.901-K', substituteName: 'Miguel Torres', substituteRut: '13.666.777-8', termStart: '2025-01-01', termEnd: '2027-01-01' },
     { id: uuidv4(), role: 'Secretaría General', name: 'Patricia Lagos', rut: '14.555.666-7', substituteName: 'Viviana Soto', substituteRut: '16.777.888-9', termStart: '2025-01-01', termEnd: '2027-01-01' },
   ];
+
+  tasks: Task[] = [];
 }
 
 // Global instance to persist across API route reloads in dev

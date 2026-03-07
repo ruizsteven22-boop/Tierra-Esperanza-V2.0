@@ -100,6 +100,31 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Registro Hogar Social</CardTitle>
+              <Activity className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <div className="text-xl font-bold text-emerald-600">{data.hogarSocialSegments.cumple}</div>
+                  <div className="text-[10px] text-slate-500 uppercase">Cumple</div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-yellow-600">{data.hogarSocialSegments.observado}</div>
+                  <div className="text-[10px] text-slate-500 uppercase">Obs.</div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-red-600">{data.hogarSocialSegments.noCumple}</div>
+                  <div className="text-[10px] text-slate-500 uppercase">No Cumple</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
