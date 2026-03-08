@@ -4,10 +4,10 @@
   body * {
     visibility: hidden;
   }
-  #print-area, #print-area * {
+  #print-area, #print-area *, #statement-print-area, #statement-print-area * {
     visibility: visible;
   }
-  #print-area {
+  #print-area, #statement-print-area {
     position: absolute;
     left: 0;
     top: 0;

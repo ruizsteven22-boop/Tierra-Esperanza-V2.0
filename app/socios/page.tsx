@@ -330,10 +330,10 @@ export default function Socios() {
               <thead className="text-xs text-slate-700 uppercase bg-slate-50">
                 <tr>
                   <th className="px-6 py-3">Nombre</th>
-                  <th className="px-6 py-3">RUT</th>
-                  <th className="px-6 py-3">Contacto</th>
-                  <th className="px-6 py-3">Dirección</th>
-                  <th className="px-6 py-3">Grupo Fam.</th>
+                  <th className="px-6 py-3 hidden sm:table-cell">RUT</th>
+                  <th className="px-6 py-3 hidden lg:table-cell">Contacto</th>
+                  <th className="px-6 py-3 hidden xl:table-cell">Dirección</th>
+                  <th className="px-6 py-3 hidden md:table-cell">Grupo Fam.</th>
                   <th className="px-6 py-3">RHS</th>
                   <th className="px-6 py-3">Estado</th>
                   <th className="px-6 py-3 text-right">Acciones</th>
@@ -342,7 +342,7 @@ export default function Socios() {
               <tbody>
                 {currentMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
+                    <td colSpan={8} className="px-6 py-8 text-center text-slate-500">
                       No se encontraron socios que coincidan con la búsqueda.
                     </td>
                   </tr>
@@ -357,15 +357,15 @@ export default function Socios() {
                       <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
                         {member.name}
                       </td>
-                      <td className="px-6 py-4">{member.rut}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 hidden sm:table-cell">{member.rut}</td>
+                      <td className="px-6 py-4 hidden lg:table-cell">
                         <div className="flex flex-col">
                           <span>{member.email}</span>
                           <span className="text-xs text-slate-400">{member.phone}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">{member.address}</td>
-                      <td className="px-6 py-4 text-center">{member.familySize}</td>
+                      <td className="px-6 py-4 hidden xl:table-cell">{member.address}</td>
+                      <td className="px-6 py-4 text-center hidden md:table-cell">{member.familySize}</td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center">
                           <span className="font-medium">{member.registroHogarSocial || 0}%</span>
@@ -657,13 +657,13 @@ export default function Socios() {
 
       {/* Member Profile Modal */}
       {selectedMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 no-print">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} 
             animate={{ opacity: 1, scale: 1 }} 
             className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
           >
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 no-print">
               <div className="flex items-center gap-4">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <FileText className="h-5 w-5 text-emerald-600" />

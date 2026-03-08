@@ -24,36 +24,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authState, setAuthState] = useState(() => {
-    const savedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-    return {
-      user: savedUser ? JSON.parse(savedUser) : null,
-      mounted: true,
-      loading: false
-    };
-  });
-  const { user, mounted, loading } = authState;
+  const [user, setUser] = useState<User | null>(null);
+  const [mounted, setMounted] = useState(false);
+  
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (mounted && !loading) {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setTimeout(() => setUser(parsed), 0);
+      } catch (e) {
+        console.error('Error parsing saved user:', e);
+        localStorage.removeItem('user');
+      }
+    }
+    setTimeout(() => setMounted(true), 0);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
       if (!user && pathname !== '/login') {
         router.push('/login');
       } else if (user && pathname === '/login') {
         router.push('/');
       }
     }
-  }, [user, pathname, mounted, loading, router]);
+  }, [user, pathname, mounted, router]);
 
   const login = (userData: User) => {
-    setAuthState(prev => ({ ...prev, user: userData }));
+    setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     router.push('/');
   };
 
   const logout = () => {
-    setAuthState(prev => ({ ...prev, user: null }));
+    setUser(null);
     localStorage.removeItem('user');
     router.push('/login');
   };
@@ -89,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login, 
       logout, 
       canAccess,
-      loading 
+      loading: !mounted 
     }}>
       {children}
     </AuthContext.Provider>
