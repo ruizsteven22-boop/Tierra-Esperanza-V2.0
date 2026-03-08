@@ -130,7 +130,18 @@ export default function Socios() {
       });
       if (res.ok) {
         setIsNewMemberModalOpen(false);
-        setNewMember({ name: '', rut: '', email: '', phone: '', address: '', region: '', commune: '', familyMembers: [], status: 'Activo' });
+        setNewMember({
+          name: '',
+          rut: '',
+          email: '',
+          phone: '',
+          address: '',
+          region: '',
+          commune: '',
+          familyMembers: [],
+          status: 'Activo',
+          registroHogarSocial: 0
+        });
         setRutError('');
         fetchData();
       }
