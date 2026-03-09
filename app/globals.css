@@ -1,61 +1,73 @@
 @import "tailwindcss";
 
 @media print {
-  body {
+  /* Reset total de contenedores */
+  html, body, #__next, .flex, .overflow-hidden, .h-screen, .max-h-screen, .overflow-y-auto, .print-container {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
     background: white !important;
-    color: black !important;
   }
-  
+
   /* Ocultar todo por defecto */
   body * {
     visibility: hidden !important;
   }
   
-  /* Mostrar solo el área de impresión y sus padres necesarios */
+  /* Mostrar solo el área de impresión y sus contenidos */
   #print-area, 
   #print-area *, 
   #statement-print-area, 
-  #statement-print-area *,
-  .print-container,
-  .print-container * {
+  #statement-print-area * {
     visibility: visible !important;
   }
 
-  /* Posicionar el área de impresión al inicio de la página */
+  /* Posicionar el área de impresión de forma absoluta para multi-página */
   #print-area, #statement-print-area {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    visibility: visible !important;
-    z-index: 9999 !important;
+    z-index: 99999 !important;
+    padding: 1.5cm !important;
     display: block !important;
   }
 
-  /* Asegurar que el fondo sea blanco y no haya sombras */
-  #print-area, #statement-print-area {
-    background-color: white !important;
-    box-shadow: none !important;
+  /* Forzar visibilidad de textos */
+  p, span, h1, h2, h3, h4, th, td {
+    color: black !important;
+    visibility: visible !important;
   }
 
-  /* Ocultar elementos con la clase no-print */
   .no-print {
     display: none !important;
     visibility: hidden !important;
   }
 
-  /* Eliminar scrollbars y restricciones de altura */
-  .overflow-y-auto, .overflow-hidden {
-    overflow: visible !important;
-    max-height: none !important;
-  }
-
-  /* Ajustar tablas para impresión */
+  /* Estilos de tabla */
   table {
     width: 100% !important;
     border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+  
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+  
+  th, td {
+    border: 1px solid #000 !important;
+    padding: 6px !important;
   }
 }
