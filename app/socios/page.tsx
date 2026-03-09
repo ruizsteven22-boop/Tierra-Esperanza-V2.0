@@ -26,7 +26,7 @@ export default function Socios() {
   const [memberTransactions, setMemberTransactions] = useState<any[]>([]);
   const [isNewMemberModalOpen, setIsNewMemberModalOpen] = useState(false);
   const [newMember, setNewMember] = useState({
-    name: '', rut: '', email: '', phone: '', address: '', region: '', commune: '', familyMembers: [] as any[], status: 'Activo', registroHogarSocial: 0
+    name: '', rut: '', email: '', phone: '', address: '', region: '', commune: '', familyMembers: [] as any[], status: 'Activo', registroHogarSocial: 0, photo: ''
   });
   const [rutError, setRutError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -104,6 +104,22 @@ export default function Socios() {
     }
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (isEdit) {
+          setEditMember({ ...editMember, photo: base64String });
+        } else {
+          setNewMember({ ...newMember, photo: base64String });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreateMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateRut(newMember.rut)) {
@@ -140,7 +156,8 @@ export default function Socios() {
           commune: '',
           familyMembers: [],
           status: 'Activo',
-          registroHogarSocial: 0
+          registroHogarSocial: 0,
+          photo: ''
         });
         setRutError('');
         fetchData();
@@ -355,7 +372,24 @@ export default function Socios() {
                       className="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors"
                     >
                       <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
-                        {member.name}
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden relative shrink-0">
+                            {member.photo ? (
+                              <Image 
+                                src={member.photo} 
+                                alt={member.name} 
+                                fill 
+                                className="object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-slate-400">
+                                <UsersIcon className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                          <span>{member.name}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 hidden sm:table-cell">{member.rut}</td>
                       <td className="px-6 py-4 hidden lg:table-cell">
@@ -464,15 +498,38 @@ export default function Socios() {
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
-                  <input
-                    type="text"
-                    required
-                    value={newMember.name}
-                    onChange={(e) => setNewMember({...newMember, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
+                    <input
+                      type="text"
+                      required
+                      value={newMember.name}
+                      onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Foto (Opcional)</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newMember.photo}
+                        onChange={(e) => setNewMember({...newMember, photo: e.target.value})}
+                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+                        placeholder="URL de Foto"
+                      />
+                      <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors border border-slate-200">
+                        <Plus className="h-4 w-4 text-slate-600" />
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={(e) => handlePhotoUpload(e)} 
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
                 <div className="relative">
                   <label className="block text-sm font-medium text-slate-700 mb-1">RUT</label>
@@ -727,13 +784,46 @@ export default function Socios() {
             
             {/* Preview Area (also used for PDF generation) */}
             <div className="p-8 overflow-y-auto bg-white" id="print-area">
-              <div className="text-center mb-8 border-b-2 border-slate-800 pb-4">
-                {config?.logo && (
-                  <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 mx-auto mb-4 object-contain" referrerPolicy="no-referrer" />
-                )}
-                <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-900">{config?.name}</h1>
-                <p className="text-sm text-slate-600 mt-1">RUT: {config?.rut} | {config?.address}</p>
-                <p className="text-sm text-slate-600">{config?.email} | {config?.phone}</p>
+              <div className="flex justify-between items-start mb-8 border-b-2 border-slate-800 pb-4">
+                <div className="flex-1">
+                  {config?.logo && (
+                    <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 mb-4 object-contain" referrerPolicy="no-referrer" />
+                  )}
+                  <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-900">{config?.name}</h1>
+                  <p className="text-sm text-slate-600 mt-1">RUT: {config?.rut} | {config?.address}</p>
+                  <p className="text-sm text-slate-600">{config?.email} | {config?.phone}</p>
+                </div>
+                <div className="ml-4 flex flex-col items-center">
+                  <div className="w-32 h-32 border-2 border-slate-200 rounded-lg overflow-hidden bg-slate-50 relative">
+                    <Image 
+                      src={isEditing ? (editMember.photo || 'https://picsum.photos/seed/user/200/200') : (selectedMember.photo || 'https://picsum.photos/seed/user/200/200')} 
+                      alt="Foto Socio" 
+                      fill 
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  {isEditing && (
+                    <div className="mt-2 flex flex-col gap-1 no-print">
+                      <input 
+                        type="text"
+                        value={editMember.photo}
+                        onChange={(e) => setEditMember({...editMember, photo: e.target.value})}
+                        placeholder="URL de Foto"
+                        className="w-32 text-[10px] px-1 py-0.5 border border-slate-200 rounded"
+                      />
+                      <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded text-[10px] text-center border border-slate-200 font-bold text-slate-600">
+                        Subir Foto
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={(e) => handlePhotoUpload(e, true)} 
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <h2 className="text-xl font-bold text-center mb-6 uppercase tracking-widest text-slate-800 border-b border-slate-200 pb-2 inline-block mx-auto">
