@@ -38,8 +38,8 @@ export interface Transaction {
   memberRut?: string;
 }
 
-export type DocumentType = 'Oficio' | 'Carta' | 'Acta';
-export type DocumentStatus = 'Borrador' | 'Firmado';
+export type DocumentType = 'Oficio' | 'Carta' | 'Acta' | 'Circular' | 'Importante';
+export type DocumentStatus = 'Borrador' | 'Firmado' | 'Cargado';
 
 export interface Document {
   id: string;
@@ -47,6 +47,7 @@ export interface Document {
   folio: string;
   title: string;
   content: string;
+  fileData?: string; // Base64 or URL
   status: DocumentStatus;
   createdAt: string;
 }

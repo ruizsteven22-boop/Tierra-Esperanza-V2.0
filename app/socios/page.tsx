@@ -187,7 +187,10 @@ export default function Socios() {
       const res = await fetch(`/api/members/${editMember.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editMember),
+        body: JSON.stringify({
+          ...editMember,
+          familySize: (editMember.familyMembers?.length || 0) + 1
+        }),
       });
       if (res.ok) {
         setIsEditing(false);
@@ -424,13 +427,28 @@ export default function Socios() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => setSelectedMember(member)}
-                          className="text-slate-500 hover:text-emerald-600 font-medium text-sm flex items-center gap-1 ml-auto"
-                        >
-                          <FileText className="h-4 w-4" />
-                          Ficha
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => setSelectedMember(member)}
+                            className="text-slate-500 hover:text-emerald-600 font-medium text-sm flex items-center gap-1"
+                          >
+                            <FileText className="h-4 w-4" />
+                            Ficha
+                          </button>
+                          {role !== 'Visualizador' && (
+                            <button 
+                              onClick={() => {
+                                setSelectedMember(member);
+                                setIsEditing(true);
+                                setEditMember(member);
+                              }}
+                              className="text-slate-500 hover:text-blue-600 font-medium text-sm flex items-center gap-1"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                              Editar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </motion.tr>
                   ))
@@ -941,6 +959,28 @@ export default function Socios() {
                            'No Cumple'}
                         </span>
                       </div>
+                    )}
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded border border-slate-100">
+                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Estado</p>
+                    {isEditing ? (
+                      <select
+                        value={editMember.status}
+                        onChange={(e) => setEditMember({...editMember, status: e.target.value as any})}
+                        className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-emerald-500 bg-white"
+                      >
+                        <option value="Activo">Activo</option>
+                        <option value="Suspendido">Suspendido</option>
+                        <option value="Pendiente">Pendiente</option>
+                      </select>
+                    ) : (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        selectedMember.status === 'Activo' ? 'bg-emerald-100 text-emerald-700' :
+                        selectedMember.status === 'Suspendido' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {selectedMember.status}
+                      </span>
                     )}
                   </div>
                   <div className="bg-slate-50 p-3 rounded border border-slate-100">

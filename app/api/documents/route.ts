@@ -10,14 +10,21 @@ export async function POST(request: Request) {
   const body = await request.json();
   const year = new Date().getFullYear();
   const count = db.documents.filter(d => d.type === body.type && d.folio.includes(year.toString())).length + 1;
-  const prefix = body.type === 'Oficio' ? 'OF' : body.type === 'Carta' ? 'CA' : 'AC';
+  const prefixes: Record<string, string> = {
+    'Oficio': 'OF',
+    'Carta': 'CA',
+    'Acta': 'AC',
+    'Circular': 'CI',
+    'Importante': 'IM'
+  };
+  const prefix = prefixes[body.type] || 'DOC';
   const folio = `${prefix}-${year}-${count.toString().padStart(3, '0')}`;
 
   const newDocument = {
     ...body,
     id: uuidv4(),
     folio,
-    status: 'Borrador',
+    status: body.fileData ? 'Cargado' : 'Borrador',
     createdAt: new Date().toISOString(),
   };
   db.documents.push(newDocument);

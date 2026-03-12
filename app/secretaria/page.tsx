@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Plus, Download, Send, PenTool, Loader2, Printer, MessageCircle, Mail, X, ShieldAlert } from 'lucide-react';
+import { FileText, Plus, Download, Send, PenTool, Loader2, Printer, MessageCircle, Mail, X, ShieldAlert, Upload, Filter, Eye } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -24,6 +24,9 @@ export default function Secretaria() {
   const [draftContent, setDraftContent] = useState('');
   const [showDraftModal, setShowDraftModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
+  const [filterType, setFilterType] = useState('Todos');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!canAccess('/secretaria')) {
@@ -120,6 +123,41 @@ export default function Secretaria() {
     shareEmail(subject, body);
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      try {
+        const res = await fetch('/api/documents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: docType,
+            title: file.name,
+            content: `Archivo cargado: ${file.name}`,
+            fileData: base64,
+          }),
+        });
+        const newDoc = await res.json();
+        setDocuments([newDoc, ...documents]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const filteredDocs = filterType === 'Todos' 
+    ? documents 
+    : documents.filter(d => d.type === filterType);
+
   if (loading) return <div className="flex items-center justify-center h-full">Cargando...</div>;
 
   if (!canAccess('/secretaria')) {
@@ -142,7 +180,24 @@ export default function Secretaria() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Secretaría y Documentación</h1>
-          <p className="text-slate-500 mt-2">Redacción asistida por IA y control de folios.</p>
+          <p className="text-slate-500 mt-2">Gestión de actas, circulares y documentos importantes.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-bold transition-all disabled:opacity-50 shadow-lg shadow-slate-200"
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {uploading ? 'Cargando...' : 'Cargar Documento'}
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+            accept=".pdf,.doc,.docx,.jpg,.png"
+          />
         </div>
       </div>
 
@@ -165,6 +220,8 @@ export default function Secretaria() {
                 <option value="Oficio">Oficio</option>
                 <option value="Carta">Carta</option>
                 <option value="Acta">Acta</option>
+                <option value="Circular">Circular</option>
+                <option value="Importante">Documento Importante</option>
               </select>
             </div>
             <div>
@@ -188,45 +245,73 @@ export default function Secretaria() {
         </Card>
 
         <Card className="col-span-4">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle>Archivo de Documentos</CardTitle>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-slate-400" />
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="text-xs py-1 px-2 rounded-lg border border-slate-200 focus:outline-none bg-white font-medium"
+              >
+                <option value="Todos">Todos</option>
+                <option value="Oficio">Oficios</option>
+                <option value="Carta">Cartas</option>
+                <option value="Acta">Actas</option>
+                <option value="Circular">Circulares</option>
+                <option value="Importante">Importantes</option>
+              </select>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-              {documents.length === 0 ? (
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+              {filteredDocs.length === 0 ? (
                 <p className="text-sm text-slate-500">No hay documentos registrados.</p>
               ) : (
-                documents.map((doc) => (
-                  <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-100 p-4 rounded-xl hover:bg-slate-50 transition-colors gap-4">
+                filteredDocs.map((doc) => (
+                  <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center justify-between border border-slate-100 p-4 rounded-xl hover:bg-slate-50 transition-colors gap-4 group">
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
-                        <FileText className="h-5 w-5" />
+                      <div className={`p-2 rounded-lg ${doc.status === 'Cargado' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'}`}>
+                        {doc.status === 'Cargado' ? <Upload className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                          <span className="font-mono text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-tighter">
                             {doc.folio}
                           </span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                            doc.status === 'Firmado' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            doc.status === 'Firmado' ? 'bg-blue-100 text-blue-700' : 
+                            doc.status === 'Cargado' ? 'bg-emerald-100 text-emerald-700' :
+                            'bg-yellow-100 text-yellow-700'
                           }`}>
                             {doc.status}
                           </span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">{doc.type}</span>
                         </div>
-                        <p className="font-medium text-sm text-slate-900 mt-1">{doc.title}</p>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="font-bold text-sm text-slate-900 mt-1">{doc.title}</p>
+                        <p className="text-[10px] text-slate-500 mt-1 font-medium">
                           {format(new Date(doc.createdAt), "d MMM yyyy, HH:mm", { locale: es })}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 sm:self-center self-end">
+                    <div className="flex items-center gap-2 sm:self-center self-end opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => setSelectedDoc(doc)}
                         className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                         title="Ver Documento"
                       >
-                        <FileText className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </button>
+                      {doc.fileData && (
+                        <a 
+                          href={doc.fileData} 
+                          download={doc.title}
+                          className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Descargar Archivo"
+                        >
+                          <Download className="h-4 w-4" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))
@@ -309,33 +394,60 @@ export default function Secretaria() {
             </div>
             
             {/* Preview Area (also used for PDF generation) */}
-            <div className="p-12 overflow-y-auto bg-white text-black" id="print-area">
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  {config?.logo && (
-                    <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 object-contain mb-2" referrerPolicy="no-referrer" />
+            <div className="p-12 overflow-y-auto bg-white text-black flex-1" id="print-area">
+              {selectedDoc.fileData ? (
+                <div className="flex flex-col items-center justify-center h-full space-y-6 py-12">
+                  <div className="p-6 bg-slate-50 rounded-full">
+                    <Upload className="h-12 w-12 text-slate-300" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-slate-900">{selectedDoc.title}</p>
+                    <p className="text-sm text-slate-500 mt-1">Este documento es un archivo externo cargado al sistema.</p>
+                  </div>
+                  <a 
+                    href={selectedDoc.fileData} 
+                    download={selectedDoc.title}
+                    className="flex items-center gap-2 bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                  >
+                    <Download className="h-5 w-5" />
+                    Descargar Archivo
+                  </a>
+                  {selectedDoc.fileData.startsWith('data:image') && (
+                    <div className="mt-8 border border-slate-100 rounded-2xl overflow-hidden max-w-full shadow-sm">
+                      <img src={selectedDoc.fileData} alt={selectedDoc.title} className="max-w-full h-auto" />
+                    </div>
                   )}
-                  <p className="font-bold text-sm uppercase">{config?.name}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">Folio: {selectedDoc.folio}</p>
-                  <p className="text-sm">Fecha: {format(new Date(selectedDoc.createdAt), "d 'de' MMMM 'de' yyyy", { locale: es })}</p>
-                </div>
-              </div>
-              <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest border-b-2 border-black pb-2">{selectedDoc.type}</h2>
-              <div className="whitespace-pre-wrap text-justify leading-relaxed mb-24">
-                {selectedDoc.content}
-              </div>
-              <div className="flex justify-around mt-16 pt-16">
-                <div className="text-center border-t border-black w-48 pt-2">
-                  <p className="font-bold">Presidente</p>
-                  <p className="text-sm">{config?.name}</p>
-                </div>
-                <div className="text-center border-t border-black w-48 pt-2">
-                  <p className="font-bold">Secretario</p>
-                  <p className="text-sm">{config?.name}</p>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      {config?.logo && (
+                        <Image src={config.logo} alt="Logo" width={64} height={64} className="h-16 object-contain mb-2" referrerPolicy="no-referrer" />
+                      )}
+                      <p className="font-bold text-sm uppercase">{config?.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">Folio: {selectedDoc.folio}</p>
+                      <p className="text-sm">Fecha: {format(new Date(selectedDoc.createdAt), "d 'de' MMMM 'de' yyyy", { locale: es })}</p>
+                    </div>
+                  </div>
+                  <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest border-b-2 border-black pb-2">{selectedDoc.type}</h2>
+                  <div className="whitespace-pre-wrap text-justify leading-relaxed mb-24">
+                    {selectedDoc.content}
+                  </div>
+                  <div className="flex justify-around mt-16 pt-16">
+                    <div className="text-center border-t border-black w-48 pt-2">
+                      <p className="font-bold">Presidente</p>
+                      <p className="text-sm">{config?.name}</p>
+                    </div>
+                    <div className="text-center border-t border-black w-48 pt-2">
+                      <p className="font-bold">Secretario</p>
+                      <p className="text-sm">{config?.name}</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         </div>
