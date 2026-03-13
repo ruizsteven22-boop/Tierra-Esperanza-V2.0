@@ -29,6 +29,7 @@ export default function Socios() {
     name: '', rut: '', email: '', phone: '', address: '', region: '', commune: '', familyMembers: [] as any[], status: 'Activo', registroHogarSocial: 0, photo: ''
   });
   const [rutError, setRutError] = useState('');
+  const [formError, setFormError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editMember, setEditMember] = useState<any>(null);
 
@@ -130,11 +131,12 @@ export default function Socios() {
     // Validate family members RUTs
     for (const fm of newMember.familyMembers) {
       if (fm.rut && !validateRut(fm.rut)) {
-        alert(`El RUT del integrante ${fm.name || ''} es inválido`);
+        setFormError(`El RUT del integrante ${fm.name || ''} es inválido`);
         return;
       }
     }
 
+    setFormError('');
     try {
       const res = await fetch('/api/members', {
         method: 'POST',
@@ -169,7 +171,7 @@ export default function Socios() {
 
   const handleUpdateMember = async () => {
     if (!validateRut(editMember.rut)) {
-      alert('RUT del socio es inválido');
+      setFormError('RUT del socio es inválido');
       return;
     }
 
@@ -177,12 +179,13 @@ export default function Socios() {
     if (editMember.familyMembers) {
       for (const fm of editMember.familyMembers) {
         if (fm.rut && !validateRut(fm.rut)) {
-          alert(`El RUT del integrante ${fm.name || ''} es inválido`);
+          setFormError(`El RUT del integrante ${fm.name || ''} es inválido`);
           return;
         }
       }
     }
 
+    setFormError('');
     try {
       const res = await fetch(`/api/members/${editMember.id}`, {
         method: 'PUT',
@@ -306,7 +309,10 @@ export default function Socios() {
           </button>
           {role !== 'Visualizador' && (
             <button 
-              onClick={() => setIsNewMemberModalOpen(true)}
+              onClick={() => {
+                setIsNewMemberModalOpen(true);
+                setFormError('');
+              }}
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors no-print"
             >
               <UserPlus className="h-4 w-4" />
@@ -441,6 +447,7 @@ export default function Socios() {
                                 setSelectedMember(member);
                                 setIsEditing(true);
                                 setEditMember(member);
+                                setFormError('');
                               }}
                               className="text-slate-500 hover:text-blue-600 font-medium text-sm flex items-center gap-1"
                             >
@@ -504,6 +511,12 @@ export default function Socios() {
                 </button>
               </div>
               <form onSubmit={handleCreateMember} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                {formError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <p className="text-xs font-medium">{formError}</p>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Registro de Hogar Social (%)</label>
                   <input
@@ -802,6 +815,12 @@ export default function Socios() {
             
             {/* Preview Area (also used for PDF generation) */}
             <div className="p-8 overflow-y-auto bg-white" id="print-area">
+              {formError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-600 animate-in fade-in slide-in-from-top-4 no-print">
+                  <AlertCircle className="h-5 w-5 shrink-0" />
+                  <p className="text-sm font-medium">{formError}</p>
+                </div>
+              )}
               <div className="flex justify-between items-start mb-8 border-b-2 border-slate-800 pb-4">
                 <div className="flex-1">
                   {config?.logo && (

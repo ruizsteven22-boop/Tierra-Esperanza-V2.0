@@ -17,6 +17,8 @@ export default function Configuracion() {
   const [message, setMessage] = useState('');
   const [rutError, setRutError] = useState('');
   const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importData, setImportData] = useState<any>(null);
 
   useEffect(() => {
     if (!canAccess('/configuracion')) {
@@ -122,8 +124,9 @@ export default function Configuracion() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      setMessage('✓ Datos exportados correctamente');
     } catch (error) {
-      alert('Error al exportar datos');
+      setMessage('Error: No se pudo exportar los datos');
     }
   };
 
@@ -135,31 +138,44 @@ export default function Configuracion() {
     reader.onload = async (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        if (confirm('¿Está seguro de importar estos datos? Se sobrescribirán los datos actuales.')) {
-          setMaintenanceLoading(true);
-          const res = await fetch('/api/maintenance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'import', data }),
-          });
-          if (res.ok) {
-            alert('Datos importados exitosamente. La página se recargará.');
-            window.location.reload();
-          } else {
-            alert('Error al importar datos');
-          }
-        }
+        setImportData(data);
+        setImportModalOpen(true);
       } catch (error) {
-        alert('Archivo inválido');
-      } finally {
-        setMaintenanceLoading(false);
+        setMessage('Error: Archivo de respaldo inválido');
       }
     };
     reader.readAsText(file);
+    // Reset input
+    e.target.value = '';
+  };
+
+  const confirmImport = async () => {
+    if (!importData) return;
+    setMaintenanceLoading(true);
+    setImportModalOpen(false);
+    try {
+      const res = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'import', data: importData }),
+      });
+      if (res.ok) {
+        setMessage('✓ Datos importados exitosamente. Recargando...');
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        setMessage('Error: No se pudo importar los datos');
+      }
+    } catch (error) {
+      setMessage('Error: Fallo en la conexión al importar');
+    } finally {
+      setMaintenanceLoading(false);
+      setImportData(null);
+    }
   };
 
   const handleReset = async () => {
     setMaintenanceLoading(true);
+    setResetModalOpen(false);
     try {
       const res = await fetch('/api/maintenance', {
         method: 'POST',
@@ -167,13 +183,13 @@ export default function Configuracion() {
         body: JSON.stringify({ action: 'reset' }),
       });
       if (res.ok) {
-        alert('Sistema restablecido exitosamente. La página se recargará.');
-        window.location.reload();
+        setMessage('✓ Sistema restablecido exitosamente. Recargando...');
+        setTimeout(() => window.location.reload(), 2000);
       } else {
-        alert('Error al restablecer el sistema');
+        setMessage('Error: No se pudo restablecer el sistema');
       }
     } catch (error) {
-      alert('Error de red');
+      setMessage('Error: Fallo en la conexión al restablecer');
     } finally {
       setMaintenanceLoading(false);
     }
@@ -406,6 +422,18 @@ export default function Configuracion() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmationModal
+        isOpen={importModalOpen}
+        onClose={() => {
+          setImportModalOpen(false);
+          setImportData(null);
+        }}
+        onConfirm={confirmImport}
+        title="Importar Datos"
+        message="¿Está seguro de importar estos datos? Se sobrescribirán todos los socios, transacciones y configuraciones actuales con la información del archivo de respaldo."
+        confirmText="Importar Ahora"
+      />
 
       <ConfirmationModal
         isOpen={resetModalOpen}

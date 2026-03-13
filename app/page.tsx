@@ -216,7 +216,7 @@ export default function Dashboard() {
                     />
                     <Tooltip 
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                      formatter={(value: any) => [`$${Number(value).toLocaleString('es-CL')}`, '']}
+                      formatter={(value: number) => [`$${value.toLocaleString('es-CL')}`, '']}
                     />
                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                     <Bar dataKey="ingresos" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />

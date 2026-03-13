@@ -413,8 +413,16 @@ export default function Secretaria() {
                     Descargar Archivo
                   </a>
                   {selectedDoc.fileData.startsWith('data:image') && (
-                    <div className="mt-8 border border-slate-100 rounded-2xl overflow-hidden max-w-full shadow-sm">
-                      <img src={selectedDoc.fileData} alt={selectedDoc.title} className="max-w-full h-auto" />
+                    <div className="mt-8 border border-slate-100 rounded-2xl overflow-hidden max-w-full shadow-sm relative min-h-[200px]">
+                      <Image 
+                        src={selectedDoc.fileData} 
+                        alt={selectedDoc.title} 
+                        width={800}
+                        height={600}
+                        className="max-w-full h-auto object-contain mx-auto" 
+                        unoptimized
+                        referrerPolicy="no-referrer"
+                      />
                     </div>
                   )}
                 </div>
