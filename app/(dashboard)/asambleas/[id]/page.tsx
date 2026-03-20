@@ -22,10 +22,11 @@ import AttendanceSystem from './AttendanceSystem';
 export default async function AssemblyDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const assembly = await prisma.assembly.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       attendance: {
         include: { member: true },

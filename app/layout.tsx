@@ -2,7 +2,6 @@ import type {Metadata} from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthProvider';
-import { AppLayout } from '@/components/AppLayout';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,7 +23,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-slate-50 text-slate-900 font-sans antialiased" suppressHydrationWarning>
         <AuthProvider>
-          <AppLayout>{children}</AppLayout>
+          {children}
         </AuthProvider>
       </body>
     </html>
