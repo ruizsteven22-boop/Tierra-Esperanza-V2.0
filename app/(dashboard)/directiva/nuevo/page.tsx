@@ -43,7 +43,7 @@ export default function NewDirectiveMemberPage() {
   useEffect(() => {
     if (search.length > 2) {
       const timer = setTimeout(async () => {
-        const res = await fetch(`/api/socios?q=${search}`);
+        const res = await fetch(`/api/members?q=${search}`);
         const data = await res.json();
         setMembers(data.members || []);
       }, 300);

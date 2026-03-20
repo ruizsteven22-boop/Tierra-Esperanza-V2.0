@@ -47,7 +47,7 @@ export default function NewUserPage() {
     setStatus({ type: 'idle', message: '' });
 
     try {
-      const res = await fetch('/api/usuarios', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

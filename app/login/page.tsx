@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +24,11 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        router.push('/dashboard');
-        router.refresh();
+        login(data.user);
       } else {
-        const data = await res.json();
         setError(data.error || 'Credenciales inválidas');
       }
     } catch (err) {

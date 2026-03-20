@@ -14,7 +14,7 @@ import {
 import { useRouter } from 'next/navigation';
 
 interface AttendanceSystemProps {
-  assemblyId: string;
+  assemblyId: number;
 }
 
 export default function AttendanceSystem({ assemblyId }: AttendanceSystemProps) {

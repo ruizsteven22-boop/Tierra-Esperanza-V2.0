@@ -43,7 +43,7 @@ export async function POST(request: Request) {
             memberId: memberId || null,
             number: nextNumber,
             amount,
-            details: description,
+            details: description
           }
         });
       }
@@ -74,8 +74,8 @@ export async function GET(request: Request) {
       where: {
         AND: [
           type ? { type } : {},
-          categoryId ? { categoryId } : {},
-          memberId ? { memberId } : {},
+          categoryId ? { categoryId: parseInt(categoryId) } : {},
+          memberId ? { memberId: parseInt(memberId) } : {},
         ]
       },
       include: {

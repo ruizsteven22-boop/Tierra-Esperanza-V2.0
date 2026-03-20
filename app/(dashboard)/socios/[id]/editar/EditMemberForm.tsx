@@ -75,7 +75,7 @@ export default function EditMemberForm({ member }: { member: any }) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/socios/${member.id}`, {
+      const response = await fetch(`/api/members/${member.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, familyMembers }),

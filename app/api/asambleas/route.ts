@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       where: type ? { type } : {},
       include: {
         _count: {
-          select: { attendance: true }
+          select: { attendances: true }
         }
       },
       orderBy: { date: 'desc' }

@@ -4,9 +4,10 @@ import { getSession } from '@/lib/auth';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -32,7 +33,7 @@ export async function POST(
     const existingAttendance = await prisma.assemblyAttendance.findUnique({
       where: {
         assemblyId_memberId: {
-          assemblyId: params.id,
+          assemblyId: parseInt(id),
           memberId: member.id
         }
       }
@@ -48,9 +49,10 @@ export async function POST(
     // Register attendance
     const attendance = await prisma.assemblyAttendance.create({
       data: {
-        assemblyId: params.id,
+        assemblyId: parseInt(id),
         memberId: member.id,
-        status: 'PRESENTE'
+        status: 'PRESENTE',
+        userId: session.userId
       },
       include: {
         member: true

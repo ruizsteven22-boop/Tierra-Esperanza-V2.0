@@ -101,7 +101,7 @@ export default async function DashboardPage() {
                     <FileText className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">{doc.name}</p>
+                    <p className="text-sm font-bold text-slate-900">{doc.title}</p>
                     <p className="text-xs text-slate-400">{new Date(doc.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
                     <Receipt className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">Recibo #{receipt.receiptNumber}</p>
+                    <p className="text-sm font-bold text-slate-900">Recibo #{receipt.number}</p>
                     <p className="text-xs text-slate-400">${Number(receipt.transaction.amount).toLocaleString()} - {new Date(receipt.issueDate).toLocaleDateString()}</p>
                   </div>
                 </div>

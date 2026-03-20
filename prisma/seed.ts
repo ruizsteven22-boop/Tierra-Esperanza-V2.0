@@ -29,21 +29,21 @@ async function main() {
   const superadminRole = await prisma.role.findUnique({ where: { name: 'superadmin' } });
   if (!superadminRole) throw new Error('Superadmin role not found');
 
-  const passwordHash = await bcrypt.hash('admin123', 10);
+  const passwordHash = await bcrypt.hash('admin', 10);
 
   await prisma.user.upsert({
     where: { username: 'admin' },
-    update: {},
+    update: { passwordHash },
     create: {
       name: 'Super Administrador',
       username: 'admin',
-      email: 'admin@sigevivi.cl',
+      email: 'ruizsteven22@gmail.com',
       passwordHash,
       roleId: superadminRole.id,
       isActive: true,
     },
   });
-  console.log('✓ Superadmin user created (admin / admin123)');
+  console.log('✓ Superadmin user created (admin / admin)');
 
   // 3. Initial Config
   await prisma.systemConfig.upsert({
@@ -54,7 +54,7 @@ async function main() {
       committeeName: 'Comité SIGEVIVI',
       address: 'Dirección del Comité',
       phone: '+56 9 1234 5678',
-      email: 'contacto@sigevivi.cl',
+      email: 'ruizsteven22@gmail.com',
       region: 'Metropolitana',
       commune: 'Santiago',
       representativeName: 'Representante Legal',

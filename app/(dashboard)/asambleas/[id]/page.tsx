@@ -18,6 +18,7 @@ import {
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AttendanceSystem from './AttendanceSystem';
+import NotifyButton from './NotifyButton';
 
 export default async function AssemblyDetailPage({
   params,
@@ -26,11 +27,11 @@ export default async function AssemblyDetailPage({
 }) {
   const { id } = await params;
   const assembly = await prisma.assembly.findUnique({
-    where: { id },
+    where: { id: parseInt(id) },
     include: {
-      attendance: {
+      attendances: {
         include: { member: true },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { registeredAt: 'desc' }
       }
     }
   });
@@ -65,6 +66,7 @@ export default async function AssemblyDetailPage({
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <NotifyButton assemblyId={assembly.id} isPast={isPast} />
           <button className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm">
             <Printer className="h-4 w-4" />
             Imprimir Acta
@@ -125,7 +127,7 @@ export default async function AssemblyDetailPage({
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/10 p-4 rounded-2xl">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Presentes</p>
-                <p className="text-2xl font-bold">{assembly.attendance.length}</p>
+                <p className="text-2xl font-bold">{assembly.attendances.length}</p>
               </div>
               <div className="bg-white/10 p-4 rounded-2xl">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Quórum</p>
@@ -141,8 +143,8 @@ export default async function AssemblyDetailPage({
               <UserCheck className="h-4 w-4 text-emerald-500" />
             </div>
             <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
-              {assembly.attendance.length > 0 ? (
-                assembly.attendance.map((att) => (
+              {assembly.attendances.length > 0 ? (
+                assembly.attendances.map((att) => (
                   <div key={att.id} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-700 text-xs font-bold">
@@ -150,7 +152,7 @@ export default async function AssemblyDetailPage({
                       </div>
                       <div>
                         <p className="text-xs font-bold text-slate-700">{att.member.name}</p>
-                        <p className="text-[10px] text-slate-400">{new Date(att.createdAt).toLocaleTimeString('es-CL')}</p>
+                        <p className="text-[10px] text-slate-400">{new Date(att.registeredAt).toLocaleTimeString('es-CL')}</p>
                       </div>
                     </div>
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-all" />

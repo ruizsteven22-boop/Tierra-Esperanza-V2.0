@@ -47,7 +47,7 @@ export default function NewTransactionPage() {
     const fetchCategories = async () => {
       setIsLoadingCategories(true);
       try {
-        const response = await fetch(`/api/tesoreria/categorias?type=${formData.type}`);
+        const response = await fetch(`/api/tesoreria/categories?type=${formData.type}`);
         const data = await response.json();
         setCategories(data);
         if (data.length > 0) {
@@ -72,7 +72,7 @@ export default function NewTransactionPage() {
       }
       setIsSearching(true);
       try {
-        const response = await fetch(`/api/socios?q=${searchQuery}`);
+        const response = await fetch(`/api/members?q=${searchQuery}`);
         const data = await response.json();
         setMembers(data);
       } catch (err) {
@@ -100,7 +100,7 @@ export default function NewTransactionPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/tesoreria/transacciones', {
+      const response = await fetch('/api/tesoreria', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

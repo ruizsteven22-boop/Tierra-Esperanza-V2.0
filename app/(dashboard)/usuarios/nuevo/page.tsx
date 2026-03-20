@@ -12,10 +12,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  User as UserIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import UserAvatar from '@/components/UserAvatar';
 
 export default function NewUserPage() {
   const [loading, setLoading] = useState(false);
@@ -24,9 +26,11 @@ export default function NewUserPage() {
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'idle'; message: string }>({ type: 'idle', message: '' });
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
     email: '',
     password: '',
     roleId: '',
+    photoUrl: '',
   });
   
   const router = useRouter();
@@ -47,7 +51,7 @@ export default function NewUserPage() {
     setStatus({ type: 'idle', message: '' });
 
     try {
-      const res = await fetch('/api/usuarios', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -94,17 +98,42 @@ export default function NewUserPage() {
               Datos del Usuario
             </h2>
           </div>
-          <div className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="block w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-slate-900 font-medium transition-all outline-none"
-                placeholder="Ej: Juan Pérez"
+          <div className="p-8 space-y-8">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Foto de Perfil</label>
+              <UserAvatar 
+                value={formData.photoUrl} 
+                onChange={(val) => setFormData({ ...formData, photoUrl: val })} 
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="block w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-slate-900 font-medium transition-all outline-none"
+                  placeholder="Ej: Juan Pérez"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre de Usuario</label>
+                <div className="relative">
+                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input
+                    type="text"
+                    required
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/\s+/g, '') })}
+                    className="block w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-slate-900 font-medium transition-all outline-none"
+                    placeholder="ej: jperez"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

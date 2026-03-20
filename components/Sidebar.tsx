@@ -107,8 +107,12 @@ export function Sidebar() {
         
         <div className="p-4 border-t border-slate-800 shrink-0">
           <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-              <UserCircle className="h-6 w-6 text-emerald-400" />
+            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 overflow-hidden">
+              {user?.photoUrl ? (
+                <img src={user.photoUrl} alt="Avatar" className="h-full w-full object-cover" />
+              ) : (
+                <UserCircle className="h-6 w-6 text-emerald-400" />
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-white truncate">{user?.name || 'Usuario'}</p>

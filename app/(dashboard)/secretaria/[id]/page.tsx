@@ -22,10 +22,11 @@ import RequestStatusForm from './RequestStatusForm';
 export default async function RequestDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const request = await prisma.secretaryRequest.findUnique({
-    where: { id: params.id },
+    where: { id: parseInt(id) },
     include: {
       member: true,
       documents: true,
@@ -62,7 +63,7 @@ export default async function RequestDetailPage({
                 {request.status}
               </span>
             </div>
-            <p className="text-slate-500 font-medium">Solicitud #{request.id.slice(-6).toUpperCase()} · {request.type}</p>
+            <p className="text-slate-500 font-medium">Solicitud #{request.id.toString().padStart(6, '0')} · {request.type}</p>
           </div>
         </div>
       </div>
@@ -133,7 +134,7 @@ export default async function RequestDetailPage({
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{new Date(record.createdAt).toLocaleString('es-CL')}</p>
                           <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider">Registro</span>
                         </div>
-                        <p className="text-sm text-slate-700 font-medium">{record.content}</p>
+                        <p className="text-sm text-slate-700 font-medium">{record.note}</p>
                       </div>
                     </div>
                   ))}
@@ -172,7 +173,7 @@ export default async function RequestDetailPage({
                         <FileText className="h-4 w-4 text-slate-400 group-hover:text-emerald-500 transition-all" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-700 truncate max-w-[120px]">{doc.name}</p>
+                        <p className="text-xs font-bold text-slate-700 truncate max-w-[120px]">{doc.title}</p>
                         <p className="text-[10px] text-slate-400">PDF · 1.2 MB</p>
                       </div>
                     </div>

@@ -10,6 +10,7 @@ interface User {
   name: string;
   email: string;
   role: string;
+  photoUrl?: string;
 }
 
 interface AuthContextType {
@@ -68,23 +69,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const canAccess = (path: string) => {
     if (!user) return false;
-    const role = user.role;
+    const role = user.role.toLowerCase();
     
-    if (role === 'Admin' || role === 'Administrador' || role === 'Presidente') return true;
+    // Superadmin has access to everything
+    if (role === 'superadmin') return true;
     
-    // Base paths everyone can access
-    if (path === '/' || path === '/socios' || path === '/directiva') return true;
+    // Dashboard is accessible to everyone
+    if (path === '/') return true;
 
-    if (role === 'Socio') {
-      return path === '/socios' || path === '/tesoreria' || path === '/directiva';
+    // Administrador has access to almost everything except support
+    if (role === 'administrador') {
+      return path !== '/soporte';
     }
 
-    if (role === 'Tesorero') {
-      return path === '/tesoreria';
+    // Role-specific access
+    if (role === 'secretaria') {
+      return ['/socios', '/secretaria', '/asambleas'].some(p => path.startsWith(p));
     }
 
-    if (role === 'Secretario') {
-      return path === '/secretaria';
+    if (role === 'tesoreria') {
+      return ['/tesoreria', '/socios'].some(p => path.startsWith(p));
+    }
+
+    if (role === 'directiva') {
+      return ['/asambleas', '/directiva', '/socios'].some(p => path.startsWith(p));
+    }
+
+    if (role === 'consulta') {
+      // Only read access to main modules
+      return ['/socios', '/asambleas', '/directiva', '/tesoreria'].some(p => path.startsWith(p));
     }
 
     return false;

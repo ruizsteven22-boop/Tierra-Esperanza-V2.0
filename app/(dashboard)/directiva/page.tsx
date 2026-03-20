@@ -21,7 +21,7 @@ export default async function DirectivePage() {
       member: true,
     },
     orderBy: {
-      position: 'asc',
+      role: 'asc',
     },
   });
 
@@ -88,7 +88,7 @@ export default async function DirectivePage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">{dm.position}</p>
+                <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">{dm.role}</p>
                 <h3 className="text-xl font-bold text-slate-900">{dm.member.name}</h3>
                 <p className="text-sm text-slate-400 font-medium">Desde: {new Date(dm.startDate).toLocaleDateString('es-CL')}</p>
               </div>

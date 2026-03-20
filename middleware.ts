@@ -31,12 +31,36 @@ export async function middleware(request: NextRequest) {
     const { payload } = await jwtVerify(token, JWT_SECRET);
     const role = payload.role as string;
 
-    // Basic role-based path protection (can be expanded)
+    // Basic role-based path protection
     if (pathname.startsWith('/soporte') && role !== 'superadmin') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     if (pathname.startsWith('/configuracion') && !['superadmin', 'administrador'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (pathname.startsWith('/usuarios') && !['superadmin', 'administrador'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (pathname.startsWith('/tesoreria') && !['superadmin', 'administrador', 'tesoreria'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (pathname.startsWith('/secretaria') && !['superadmin', 'administrador', 'secretaria'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (pathname.startsWith('/directiva') && !['superadmin', 'administrador', 'directiva'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (pathname.startsWith('/socios') && !['superadmin', 'administrador', 'secretaria', 'directiva'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (pathname.startsWith('/asambleas') && !['superadmin', 'administrador', 'directiva', 'secretaria'].includes(role)) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 

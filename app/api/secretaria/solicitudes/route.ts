@@ -23,7 +23,8 @@ export async function POST(request: Request) {
         type,
         priority,
         status: 'Pendiente',
-        memberId,
+        memberId: parseInt(memberId),
+        userId: session.userId
       },
       include: {
         member: true
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
       where: {
         AND: [
           status ? { status } : {},
-          memberId ? { memberId } : {},
+          memberId ? { memberId: parseInt(memberId) } : {},
         ]
       },
       include: {

@@ -22,7 +22,7 @@ export default function ConfigForm({ initialConfig }: ConfigFormProps) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'idle'; message: string }>({ type: 'idle', message: '' });
   const [formData, setFormData] = useState({
-    organizationName: initialConfig?.organizationName || 'Comité de Vivienda SIGEVIVI',
+    committeeName: initialConfig?.committeeName || 'Comité de Vivienda SIGEVIVI',
     rut: initialConfig?.rut || '',
     address: initialConfig?.address || '',
     email: initialConfig?.email || '',
@@ -39,8 +39,8 @@ export default function ConfigForm({ initialConfig }: ConfigFormProps) {
     setStatus({ type: 'idle', message: '' });
 
     try {
-      const res = await fetch('/api/configuracion', {
-        method: 'POST',
+      const res = await fetch('/api/config', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -72,12 +72,12 @@ export default function ConfigForm({ initialConfig }: ConfigFormProps) {
         <div className="p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre de la Organización</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre del Comité</label>
               <input
                 type="text"
                 required
-                value={formData.organizationName}
-                onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
+                value={formData.committeeName}
+                onChange={(e) => setFormData({ ...formData, committeeName: e.target.value })}
                 className="block w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl text-slate-900 font-medium transition-all outline-none"
               />
             </div>

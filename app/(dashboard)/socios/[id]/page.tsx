@@ -13,7 +13,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  Trash2
+  Trash2,
+  Tag
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -22,17 +23,19 @@ import PrintMemberProfile from '@/components/socios/PrintMemberProfile';
 export default async function MemberDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const member = await prisma.member.findUnique({
-    where: { id: params.id },
+    where: { id: parseInt(id) },
     include: {
       familyMembers: true,
-      receipts: {
-        orderBy: { createdAt: 'desc' },
+      treasuryTransactions: {
+        include: { receipt: true },
+        orderBy: { date: 'desc' },
         take: 5
       },
-      attendance: {
+      attendances: {
         include: { assembly: true },
         orderBy: { assembly: { date: 'desc' } },
         take: 5
@@ -119,10 +122,10 @@ export default async function MemberDetailPage({
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha de Nacimiento</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">RHS (Hogar Social)</p>
                 <div className="flex items-center gap-2 text-slate-900 font-medium">
-                  <Calendar className="h-4 w-4 text-slate-400" />
-                  {member.birthDate ? new Date(member.birthDate).toLocaleDateString('es-CL') : 'No registrada'}
+                  <Tag className="h-4 w-4 text-slate-400" />
+                  {member.registroHogarSocial || 'No registrado'}
                 </div>
               </div>
               <div className="space-y-1">
@@ -188,12 +191,12 @@ export default async function MemberDetailPage({
             <h3 className="font-bold text-lg opacity-90">Resumen de Cuenta</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-emerald-500/30 pb-4">
-                <span className="text-sm opacity-80">Cuotas Pagadas</span>
-                <span className="text-xl font-bold">{member.receipts.length}</span>
+                <span className="text-sm opacity-80">Transacciones</span>
+                <span className="text-xl font-bold">{member.treasuryTransactions.length}</span>
               </div>
               <div className="flex items-center justify-between border-b border-emerald-500/30 pb-4">
                 <span className="text-sm opacity-80">Asistencia Asambleas</span>
-                <span className="text-xl font-bold">{member.attendance.length}</span>
+                <span className="text-xl font-bold">{member.attendances.length}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm opacity-80">Estado de Pagos</span>
@@ -208,24 +211,28 @@ export default async function MemberDetailPage({
               <h3 className="font-bold text-slate-900">Últimos Pagos</h3>
             </div>
             <div className="divide-y divide-slate-50">
-              {member.receipts.length > 0 ? (
-                member.receipts.map((receipt) => (
-                  <div key={receipt.id} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
+              {member.treasuryTransactions.length > 0 ? (
+                member.treasuryTransactions.map((tx) => (
+                  <div key={tx.id} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
                     <div>
-                      <p className="text-sm font-bold text-slate-700">#{receipt.number}</p>
-                      <p className="text-xs text-slate-400">{new Date(receipt.createdAt).toLocaleDateString('es-CL')}</p>
+                      <p className="text-sm font-bold text-slate-700">{tx.description}</p>
+                      <p className="text-xs text-slate-400">{new Date(tx.date).toLocaleDateString('es-CL')}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-emerald-600">${receipt.amount.toLocaleString('es-CL')}</span>
-                      <button className="p-2 text-slate-300 group-hover:text-emerald-600 transition-all">
-                        <Download className="h-4 w-4" />
-                      </button>
+                      <span className={`text-sm font-bold ${tx.type === 'INGRESO' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {tx.type === 'INGRESO' ? '+' : '-'}${Number(tx.amount).toLocaleString('es-CL')}
+                      </span>
+                      {tx.receipt && (
+                        <button className="p-2 text-slate-300 group-hover:text-emerald-600 transition-all">
+                          <Download className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="p-8 text-center text-slate-400 text-sm">
-                  Sin pagos registrados
+                  Sin transacciones registradas
                 </div>
               )}
             </div>
@@ -237,8 +244,8 @@ export default async function MemberDetailPage({
               <h3 className="font-bold text-slate-900">Asistencia Asambleas</h3>
             </div>
             <div className="divide-y divide-slate-50">
-              {member.attendance.length > 0 ? (
-                member.attendance.map((att) => (
+              {member.attendances.length > 0 ? (
+                member.attendances.map((att) => (
                   <div key={att.id} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between">
                     <div>
                       <p className="text-sm font-bold text-slate-700">{att.assembly.title}</p>

@@ -4,9 +4,10 @@ import { getSession } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -23,7 +24,7 @@ export async function PUT(
     const result = await prisma.$transaction(async (tx) => {
       // Update request status
       const updatedRequest = await tx.secretaryRequest.update({
-        where: { id: params.id },
+        where: { id: parseInt(id) },
         data: { status }
       });
 
@@ -31,8 +32,9 @@ export async function PUT(
       if (recordContent) {
         await tx.secretaryRecord.create({
           data: {
-            requestId: params.id,
-            content: recordContent,
+            requestId: parseInt(id),
+            note: recordContent,
+            userId: session.userId
           }
         });
       }
@@ -49,18 +51,19 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
     await prisma.$transaction([
-      prisma.secretaryDocument.deleteMany({ where: { requestId: params.id } }),
-      prisma.secretaryRecord.deleteMany({ where: { requestId: params.id } }),
-      prisma.secretaryRequest.delete({ where: { id: params.id } })
+      prisma.secretaryDocument.deleteMany({ where: { requestId: parseInt(id) } }),
+      prisma.secretaryRecord.deleteMany({ where: { requestId: parseInt(id) } }),
+      prisma.secretaryRequest.delete({ where: { id: parseInt(id) } })
     ]);
 
     return NextResponse.json({ success: true });

@@ -42,7 +42,7 @@ export default function NewRequestPage() {
       }
       setIsSearching(true);
       try {
-        const response = await fetch(`/api/socios?q=${searchQuery}`);
+        const response = await fetch(`/api/members?q=${searchQuery}`);
         const data = await response.json();
         setMembers(data);
       } catch (err) {

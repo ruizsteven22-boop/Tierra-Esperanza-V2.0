@@ -16,10 +16,11 @@ import Link from 'next/link';
 export default async function MembersPage({
   searchParams,
 }: {
-  searchParams: { q?: string; status?: string };
+  searchParams: Promise<{ q?: string; status?: string }>;
 }) {
-  const query = searchParams.q || '';
-  const status = searchParams.status || 'Todos';
+  const { q, status: statusParam } = await searchParams;
+  const query = q || '';
+  const status = statusParam || 'Todos';
 
   const members = await prisma.member.findMany({
     where: {

@@ -67,7 +67,7 @@ export default function NewMemberPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/socios', {
+      const response = await fetch('/api/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, familyMembers }),

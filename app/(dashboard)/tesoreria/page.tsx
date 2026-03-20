@@ -20,10 +20,11 @@ import PrintReceipt from '@/components/tesoreria/PrintReceipt';
 export default async function TreasuryPage({
   searchParams,
 }: {
-  searchParams: { q?: string; type?: string };
+  searchParams: Promise<{ q?: string; type?: string }>;
 }) {
-  const query = searchParams.q || '';
-  const type = searchParams.type || 'Todos';
+  const { q, type: typeParam } = await searchParams;
+  const query = q || '';
+  const type = typeParam || 'Todos';
 
   const transactions = await prisma.treasuryTransaction.findMany({
     where: {
@@ -47,12 +48,12 @@ export default async function TreasuryPage({
 
   // Calculate stats
   const totalIncome = transactions
-    .filter(t => t.type === 'Ingreso')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => t.type === 'INGRESO')
+    .reduce((sum, t) => sum + Number(t.amount), 0);
   
   const totalExpense = transactions
-    .filter(t => t.type === 'Egreso')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => t.type === 'EGRESO')
+    .reduce((sum, t) => sum + Number(t.amount), 0);
   
   const balance = totalIncome - totalExpense;
 
@@ -137,8 +138,8 @@ export default async function TreasuryPage({
             onChange={(e) => window.location.href = `/tesoreria?type=${e.target.value}${query ? `&q=${query}` : ''}`}
           >
             <option value="Todos">Todos los tipos</option>
-            <option value="Ingreso">Solo Ingresos</option>
-            <option value="Egreso">Solo Egresos</option>
+            <option value="INGRESO">Solo Ingresos</option>
+            <option value="EGRESO">Solo Egresos</option>
           </select>
           <button className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all">
             <Download className="h-5 w-5" />
@@ -166,9 +167,9 @@ export default async function TreasuryPage({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                          t.type === 'Ingreso' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
+                          t.type === 'INGRESO' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
                         }`}>
-                          {t.type === 'Ingreso' ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownLeft className="h-5 w-5" />}
+                          {t.type === 'INGRESO' ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownLeft className="h-5 w-5" />}
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-all">{t.description}</p>
@@ -178,14 +179,14 @@ export default async function TreasuryPage({
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
-                        {t.category.name}
+                        {t.category?.name || 'Sin categoría'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <p className={`text-sm font-bold ${
-                        t.type === 'Ingreso' ? 'text-emerald-600' : 'text-red-600'
+                        t.type === 'INGRESO' ? 'text-emerald-600' : 'text-red-600'
                       }`}>
-                        {t.type === 'Ingreso' ? '+' : '-'}${t.amount.toLocaleString('es-CL')}
+                        {t.type === 'INGRESO' ? '+' : '-'}${Number(t.amount).toLocaleString('es-CL')}
                       </p>
                     </td>
                     <td className="px-6 py-4">

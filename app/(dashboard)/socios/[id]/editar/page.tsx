@@ -5,10 +5,11 @@ import EditMemberForm from './EditMemberForm';
 export default async function EditMemberPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const member = await prisma.member.findUnique({
-    where: { id: params.id },
+    where: { id: parseInt(id) },
     include: {
       familyMembers: true
     }

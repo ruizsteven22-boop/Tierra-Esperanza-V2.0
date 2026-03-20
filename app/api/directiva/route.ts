@@ -10,9 +10,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { memberId, position, startDate, endDate } = body;
+    const { memberId, role, startDate, endDate } = body;
 
-    if (!memberId || !position || !startDate) {
+    if (!memberId || !role || !startDate) {
       return NextResponse.json({ error: 'Socio, cargo y fecha de inicio son obligatorios' }, { status: 400 });
     }
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const newDirectiveMember = await prisma.directiveMember.create({
       data: {
         memberId,
-        position,
+        role,
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
       }
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         member: true,
       },
       orderBy: {
-        position: 'asc',
+        role: 'asc',
       },
     });
 

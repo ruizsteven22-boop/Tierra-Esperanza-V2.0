@@ -18,10 +18,11 @@ import Link from 'next/link';
 export default async function AssembliesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; type?: string };
+  searchParams: Promise<{ q?: string; type?: string }>;
 }) {
-  const query = searchParams.q || '';
-  const type = searchParams.type || 'Todos';
+  const { q, type: typeParam } = await searchParams;
+  const query = q || '';
+  const type = typeParam || 'Todos';
 
   const assemblies = await prisma.assembly.findMany({
     where: {
@@ -37,7 +38,7 @@ export default async function AssembliesPage({
     },
     include: {
       _count: {
-        select: { attendance: true }
+        select: { attendances: true }
       }
     },
     orderBy: { date: 'desc' }
@@ -105,7 +106,7 @@ export default async function AssembliesPage({
                         <UserCheck className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-900">{assembly._count.attendance}</p>
+                        <p className="text-xs font-bold text-slate-900">{assembly._count.attendances}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Asistentes</p>
                       </div>
                     </div>

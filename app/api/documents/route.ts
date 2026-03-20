@@ -1,32 +1,74 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { v4 as uuidv4 } from 'uuid';
+import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
 
 export async function GET() {
-  return NextResponse.json(db.documents);
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const documents = await prisma.secretaryDocument.findMany({
+      include: {
+        request: true,
+        user: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return NextResponse.json(documents);
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al obtener documentos' }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const year = new Date().getFullYear();
-  const count = db.documents.filter(d => d.type === body.type && d.folio.includes(year.toString())).length + 1;
-  const prefixes: Record<string, string> = {
-    'Oficio': 'OF',
-    'Carta': 'CA',
-    'Acta': 'AC',
-    'Circular': 'CI',
-    'Importante': 'IM'
-  };
-  const prefix = prefixes[body.type] || 'DOC';
-  const folio = `${prefix}-${year}-${count.toString().padStart(3, '0')}`;
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
 
-  const newDocument = {
-    ...body,
-    id: uuidv4(),
-    folio,
-    status: body.fileData ? 'Cargado' : 'Borrador',
-    createdAt: new Date().toISOString(),
-  };
-  db.documents.push(newDocument);
-  return NextResponse.json(newDocument, { status: 201 });
+    const body = await request.json();
+    const { title, type, fileUrl, requestId } = body;
+
+    if (!title || !type) {
+      return NextResponse.json({ error: 'Título y tipo son obligatorios' }, { status: 400 });
+    }
+
+    const year = new Date().getFullYear();
+    const count = await prisma.secretaryDocument.count({
+      where: {
+        type,
+        folio: { contains: year.toString() }
+      }
+    });
+
+    const prefixes: Record<string, string> = {
+      'Oficio': 'OF',
+      'Carta': 'CA',
+      'Acta': 'AC',
+      'Circular': 'CI',
+      'Importante': 'IM'
+    };
+    const prefix = prefixes[type] || 'DOC';
+    const folio = `${prefix}-${year}-${(count + 1).toString().padStart(3, '0')}`;
+
+    const newDocument = await prisma.secretaryDocument.create({
+      data: {
+        title,
+        type,
+        folio,
+        fileUrl: fileUrl || null,
+        status: fileUrl ? 'Cargado' : 'Borrador',
+        requestId: requestId ? parseInt(requestId) : null,
+        userId: session.userId
+      }
+    });
+
+    return NextResponse.json(newDocument, { status: 201 });
+  } catch (error: any) {
+    console.error('Error creating document:', error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+  }
 }
