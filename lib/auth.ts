@@ -18,20 +18,28 @@ export async function comparePassword(password: string, hash: string): Promise<b
 }
 
 export async function createSession(userId: number, role: string) {
+  console.log('Creating session token for user:', userId);
   const token = await new SignJWT({ userId, role })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
     .sign(JWT_SECRET);
 
+  console.log('Token created, setting cookie...');
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    path: '/',
-    maxAge: 60 * 60 * 24, // 24 hours
-  });
+  try {
+    cookieStore.set(COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+      maxAge: 60 * 60 * 24, // 24 hours
+    });
+    console.log('Cookie set successfully');
+  } catch (err) {
+    console.error('Error setting cookie:', err);
+    throw err;
+  }
 }
 
 export async function getSession() {
