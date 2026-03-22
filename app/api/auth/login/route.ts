@@ -24,20 +24,16 @@ export async function POST(request: Request) {
       include: { role: true },
     });
 
-    console.log('User found:', !!user);
-
     if (!user) {
       console.log('User not found:', username);
       return NextResponse.json({ error: 'Usuario no encontrado o inactivo' }, { status: 401 });
     }
 
-    console.log('User isActive:', user.isActive);
     if (!user.isActive) {
       console.log('User inactive:', username);
       return NextResponse.json({ error: 'Usuario no encontrado o inactivo' }, { status: 401 });
     }
 
-    console.log('Comparing password for user:', user.id);
     const isValid = await comparePassword(password, user.passwordHash);
     console.log('Password valid:', isValid);
 
